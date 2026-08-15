@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ranking WeDrop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --kraft: #C9915B;
+    --kraft-dark: #A9713E;
+    --ink: #1E1B16;
+    --paper: #F3EDE1;
+    --paper-2: #E9E0CE;
+    --teal: #1F4B4A;
+    --stamp-red: #B5432E;
+    --line: #D8CBB0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{ max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  /* Header estilo etiqueta de envio */
+  .label-header{
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 4px;
+    padding: 28px 32px;
+    position: relative;
+    border: 2px dashed var(--kraft-dark);
+    margin-bottom: 32px;
+  }
+  .label-header::before{
+    content: "PEDIDO Nº 001 · WEDROP";
+    position:absolute; top:-11px; left:24px;
+    background:var(--ink); color:var(--paper);
+    font-family:'Space Mono', monospace;
+    font-size:11px; letter-spacing:2px;
+    padding:3px 10px;
+  }
+  .label-header h1{
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size: 40px;
+    margin: 6px 0 4px;
+    letter-spacing: -0.5px;
+  }
+  .label-header p{
+    font-family:'Space Mono', monospace;
+    font-size:14px;
+    color:var(--kraft-dark);
+    margin:0;
+  }
+
+  /* Cartões numerados (estilo etapas de despacho) */
+  .card{
+    background: #262219;
+    border: 1px solid #3a3428;
+    border-radius: 10px;
+    padding: 26px 28px;
+    margin-bottom: 22px;
+  }
+  .card.disabled{ opacity: 0.4; pointer-events:none; }
+  .card-title{
+    display:flex; align-items:center; gap:12px;
+    font-family:'Fraunces', serif;
+    font-size:20px; font-weight:700;
+    margin: 0 0 18px;
+  }
+  .badge{
+    background: var(--kraft);
+    color: var(--ink);
+    width: 30px; height:30px;
+    border-radius: 50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace;
+    font-weight:700; font-size:14px;
+    flex-shrink:0;
+  }
+
+  /* Dropzone */
+  .dropzone{
+    border: 2px dashed #4a4332;
+    border-radius: 8px;
+    padding: 36px 20px;
+    text-align:center;
+    cursor:pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .dropzone:hover, .dropzone.drag{
+    border-color: var(--kraft);
+    background: #2c2717;
+  }
+  .dropzone svg{ margin-bottom:10px; opacity:.7; }
+  .dropzone .main{ font-weight:600; font-size:15px; }
+  .dropzone .sub{ font-family:'Space Mono', monospace; font-size:12px; color:#9c9382; margin-top:6px;}
+  input[type=file]{ display:none; }
+  .file-ok{
+    display:flex; align-items:center; justify-content:space-between;
+    background:#2c2717; border-radius:8px; padding:14px 18px;
+    font-family:'Space Mono', monospace; font-size:13px;
+  }
+  .file-ok button{
+    background:none; border:1px solid #4a4332; color:var(--paper);
+    border-radius:6px; padding:6px 12px; cursor:pointer; font-family:'Inter';
+  }
+
+  /* Controles */
+  label.field-label{ display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:#c9bda0;}
+  select, .val-display{
+    width:100%;
+    background:#1a1712; color:var(--paper);
+    border:1px solid #4a4332; border-radius:8px;
+    padding:10px 12px; font-size:14px; font-family:'Inter';
+  }
+  .field{ margin-bottom:20px; }
+  .field:last-child{ margin-bottom:0; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:640px){ .row2{grid-template-columns:1fr;} }
+
+  input[type=range]{ width:100%; accent-color: var(--kraft); }
+  .slider-val{ font-family:'Space Mono', monospace; color:var(--kraft); font-weight:700; }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+  .switch{ position:relative; width:44px; height:24px; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider-switch{
+    position:absolute; cursor:pointer; inset:0;
+    background:#4a4332; border-radius:24px; transition:.15s;
+  }
+  .slider-switch:before{
+    content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px;
+    background:var(--paper); border-radius:50%; transition:.15s;
+  }
+  input:checked + .slider-switch{ background: var(--kraft); }
+  input:checked + .slider-switch:before{ transform: translateX(20px); }
+
+  /* Botão principal */
+  .btn-main{
+    width:100%;
+    background: var(--kraft);
+    color: var(--ink);
+    border:none; border-radius:10px;
+    padding:16px; font-size:16px; font-weight:700;
+    font-family:'Inter'; cursor:pointer;
+    margin-top:6px;
+    transition: transform .1s;
+  }
+  .btn-main:hover{ transform: translateY(-1px); }
+  .btn-main:disabled{ background:#4a4332; color:#8a8272; cursor:not-allowed; transform:none;}
+
+  .hint{ font-family:'Space Mono', monospace; font-size:12px; color:#9c9382; margin-top:10px; }
+
+  /* Modal */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(10,9,6,.7);
+    align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .overlay.show{ display:flex; }
+  .modal{
+    background: var(--paper); color: var(--ink);
+    border-radius: 12px; padding: 30px 32px;
+    max-width: 560px; width:100%;
+    max-height: 85vh; overflow-y:auto;
+  }
+  .modal.wide{ max-width: 820px; }
+  .modal h2{
+    font-family:'Fraunces', serif; font-size:24px; margin-top:0;
+  }
+  .modal-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px;}
+  .modal-row span:first-child{ color:#6b6252; }
+  .modal-row span:last-child{ font-weight:600; }
+  .modal-actions{ display:flex; gap:12px; margin-top:22px; }
+  .modal-actions button{
+    flex:1; padding:12px; border-radius:8px; font-weight:700; cursor:pointer;
+    border:none; font-family:'Inter'; font-size:14px;
+  }
+  .btn-confirm{ background:var(--teal); color:var(--paper); }
+  .btn-cancel{ background:transparent; border:1px solid var(--line) !important; color:var(--ink); }
+
+  /* Loading */
+  .loading-box{ text-align:center; padding: 20px 0; }
+  .progress-track{ background:var(--line); border-radius:20px; height:10px; overflow:hidden; margin-top:16px;}
+  .progress-fill{ background:var(--kraft-dark); height:100%; width:0%; transition:width .2s; }
+
+  /* Resultado */
+  .stamp{
+    display:inline-block; border:3px solid var(--stamp-red); color:var(--stamp-red);
+    border-radius: 8px; padding: 4px 12px; font-family:'Space Mono', monospace;
+    font-weight:700; font-size:13px; transform: rotate(-4deg); letter-spacing:1px;
+  }
+  .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin: 18px 0; }
+  .metric{ background:var(--paper-2); border-radius:8px; padding:14px; text-align:center; }
+  .metric .num{ font-family:'Fraunces', serif; font-size:26px; font-weight:700; }
+  .metric .lab{ font-size:11px; color:#6b6252; font-family:'Space Mono', monospace; }
+
+  table{ width:100%; border-collapse: collapse; font-size:13px; margin-top:10px;}
+  th{ text-align:left; font-family:'Space Mono', monospace; font-size:11px; color:#6b6252; padding:8px 6px; border-bottom:2px solid var(--ink); }
+  td{ padding:8px 6px; border-bottom:1px solid var(--line); }
+  tr:first-child td{ background: #FFF3DD; font-weight:700; }
+  img.prod{ width:36px; height:36px; object-fit:cover; border-radius:5px; vertical-align:middle; }
+
+  .empty-msg{ text-align:center; color:#9c9382; font-family:'Space Mono', monospace; font-size:13px; padding:10px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="label-header">
+    <h1>Ranking WeDrop</h1>
+    <p>Suba o catálogo → escolha a categoria → veja os melhores produtos pra vender agora.</p>
+  </div>
+
+  <!-- ETAPA 1 -->
+  <div class="card">
+    <div class="card-title"><span class="badge">1</span> Catálogo</div>
+    <div id="dropzone" class="dropzone">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9915B" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      <div class="main">Clique ou arraste o CSV exportado da WeDrop</div>
+      <div class="sub">botão "Exportar" no painel dash.wedrop.com.br</div>
+      <input type="file" id="fileInput" accept=".csv">
+    </div>
+    <div id="fileOk" class="file-ok" style="display:none;">
+      <span id="fileOkText"></span>
+      <button id="trocarArquivo">Trocar arquivo</button>
+    </div>
+  </div>
+
+  <!-- ETAPA 2 -->
+  <div class="card disabled" id="cardConfig">
+    <div class="card-title"><span class="badge">2</span> Configurações</div>
+    <div class="row2">
+      <div>
+        <div class="field">
+          <label class="field-label">Categoria</label>
+          <select id="categoriaSelect"></select>
+        </div>
+        <div class="field">
+          <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
+          <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
+        </div>
+      </div>
+      <div>
+        <div class="toggle-row">
+          <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
+          <label class="switch">
+            <input type="checkbox" id="tendenciaToggle" checked>
+            <span class="slider-switch"></span>
+          </label>
+        </div>
+        <div class="field">
+          <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
+          <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
+        </div>
+        <div class="field">
+          <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
+          <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
+        </div>
+      </div>
+    </div>
+    <p class="hint" id="qtdCategoria"></p>
+    <button class="btn-main" id="btnGerar">🔍 Gerar ranking</button>
+    <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
+  </div>
+
+</div>
+
+<!-- MODAL CONFIRMAÇÃO -->
+<div class="overlay" id="overlayConfirm">
+  <div class="modal">
+    <h2>Confirmar geração</h2>
+    <div class="modal-row"><span>Categoria</span><span id="confCategoria"></span></div>
+    <div class="modal-row"><span>Produtos na categoria</span><span id="confQtd"></span></div>
+    <div class="modal-row"><span>Markup</span><span id="confMarkup"></span></div>
+    <div class="modal-row"><span>Mostrar no ranking</span><span id="confTopN"></span></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnCancelar">Cancelar</button>
+      <button class="btn-confirm" id="btnConfirmar">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LOADING -->
+<div class="overlay" id="overlayLoading">
+  <div class="modal" style="text-align:center;">
+    <div class="loading-box">
+      <span class="stamp">PROCESSANDO</span>
+      <p id="loadingTexto" style="margin-top:16px; font-family:'Space Mono', monospace; font-size:13px;">Consultando Google Trends...</p>
+      <div class="progress-track"><div class="progress-fill" id="loadingBar"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESULTADO -->
+<div class="overlay" id="overlayResultado">
+  <div class="modal wide">
+    <span class="stamp">RANKING PRONTO</span>
+    <h2 id="resTitulo">Melhores produtos</h2>
+    <p id="avisoAtualizacao" class="hint" style="display:none; margin-top:-8px;"></p>
+    <div class="metrics">
+      <div class="metric"><div class="num" id="mProdutos">-</div><div class="lab">PRODUTOS</div></div>
+      <div class="metric"><div class="num" id="mMargem">-</div><div class="lab">MARGEM MÉDIA</div></div>
+      <div class="metric"><div class="num" id="mTop">-</div><div class="lab">TOP 1</div></div>
+    </div>
+    <div style="max-height:340px; overflow-y:auto;">
+      <table>
+        <thead><tr id="theadResultado"><th></th><th>Produto</th><th>Custo</th><th>Venda sug.</th><th>Margem</th></tr></thead>
+        <tbody id="tabelaResultado"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="btnFechar">Fechar</button>
+      <button class="btn-confirm" id="btnBaixar">⬇️ Baixar CSV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let produtos = [];
+let colunas = [];
+let resultadoAtual = [];
+let trendsCache = null;
+let trendsGeradoEm = null;
+
+async function carregarTrendsJSON() {
+  if (trendsCache !== null) return trendsCache;
+  try {
+    const resp = await fetch('./trends.json', { cache: 'no-store' });
+    const dados = await resp.json();
+    trendsCache = dados.scores || {};
+    trendsGeradoEm = dados.gerado_em || null;
+  } catch (e) {
+    trendsCache = {};
+  }
+  return trendsCache;
+}
+
+const dropzone = document.getElementById('dropzone');
+const fileInput = document.getElementById('fileInput');
+const fileOk = document.getElementById('fileOk');
+const fileOkText = document.getElementById('fileOkText');
+const cardConfig = document.getElementById('cardConfig');
+
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault(); dropzone.classList.remove('drag');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+document.getElementById('trocarArquivo').addEventListener('click', () => {
+  fileOk.style.display = 'none';
+  dropzone.style.display = 'block';
+  cardConfig.classList.add('disabled');
+});
+
+function parseCSV(text) {
+  const linhas = text.replace(/\r/g,'').split('\n').filter(l => l.length);
+  const parseLinha = (linha) => {
+    const campos = []; let atual = ''; let dentroAspas = false;
+    for (let i=0; i<linha.length; i++) {
+      const c = linha[i];
+      if (c === '"') { dentroAspas = !dentroAspas; }
+      else if (c === ',' && !dentroAspas) { campos.push(atual); atual=''; }
+      else { atual += c; }
+    }
+    campos.push(atual);
+    return campos.map(c => c.trim());
+  };
+  const header = parseLinha(linhas[0]);
+  const dados = linhas.slice(1).map(l => {
+    const vals = parseLinha(l);
+    const obj = {};
+    header.forEach((h,i) => obj[h] = vals[i] !== undefined ? vals[i] : '');
+    return obj;
+  });
+  return { header, dados };
+}
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const { header, dados } = parseCSV(e.target.result);
+    colunas = header;
+    produtos = dados.filter(p => p['Nome do Produto']);
+    fileOkText.textContent = `✅ ${file.name} — ${produtos.length} produtos carregados`;
+    fileOk.style.display = 'flex';
+    dropzone.style.display = 'none';
+    popularCategorias();
+    cardConfig.classList.remove('disabled');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function popularCategorias() {
+  const cats = [...new Set(produtos.map(p => p['Categoria']).filter(Boolean))].sort();
+  const sel = document.getElementById('categoriaSelect');
+  sel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  atualizarQtdCategoria();
+}
+document.getElementById('categoriaSelect').addEventListener('change', atualizarQtdCategoria);
+function atualizarQtdCategoria() {
+  const cat = document.getElementById('categoriaSelect').value;
+  const qtd = produtos.filter(p => p['Categoria'] === cat).length;
+  document.getElementById('qtdCategoria').textContent = `${qtd} produtos nessa categoria`;
+}
+
+const markupRange = document.getElementById('markupRange');
+markupRange.addEventListener('input', () => {
+  document.getElementById('markupVal').textContent = parseFloat(markupRange.value).toFixed(1) + 'x';
+});
+const topNRange = document.getElementById('topNRange');
+topNRange.addEventListener('input', () => {
+  document.getElementById('topNVal').textContent = topNRange.value;
+});
+const pesoRange = document.getElementById('pesoRange');
+pesoRange.addEventListener('input', () => {
+  document.getElementById('pesoVal').textContent = `${pesoRange.value}% / ${100 - pesoRange.value}%`;
+});
+
+// ---- Gerar (abre modal de confirmação) ----
+document.getElementById('btnGerar').addEventListener('click', () => {
+  const cat = document.getElementById('categoriaSelect').value;
+  const qtd = produtos.filter(p => p['Categoria'] === cat).length;
+  const comTendencia = document.getElementById('tendenciaToggle').checked;
+  document.getElementById('confCategoria').textContent = cat;
+  document.getElementById('confQtd').textContent = qtd;
+  document.getElementById('confMarkup').textContent = markupRange.value + 'x';
+  document.getElementById('confTopN').textContent = topNRange.value + (comTendencia ? ' (com tendência — pode levar 1-2 min)' : '');
+  document.getElementById('overlayConfirm').classList.add('show');
+});
+document.getElementById('btnCancelar').addEventListener('click', () => {
+  document.getElementById('overlayConfirm').classList.remove('show');
+});
+document.getElementById('overlayConfirm').addEventListener('click', (e) => {
+  if (e.target.id === 'overlayConfirm') e.target.classList.remove('show');
+});
+
+document.getElementById('btnConfirmar').addEventListener('click', () => {
+  document.getElementById('overlayConfirm').classList.remove('show');
+  gerarRanking();
+});
+
+function parsePreco(v) {
+  if (!v) return 0;
+  let s = String(v).replace('R$','').trim();
+  if (s.includes(',') && s.includes('.')) { s = s.replace(/\./g,'').replace(',','.'); }
+  else if (s.includes(',')) { s = s.replace(',','.'); }
+  return parseFloat(s) || 0;
+}
+
+function normalizar(valores) {
+  if (!valores.length) return [];
+  const min = Math.min(...valores), max = Math.max(...valores);
+  if (max === min) return valores.map(() => 50);
+  return valores.map(v => ((v - min) / (max - min)) * 100);
+}
+
+function nomeParaBusca(nome) {
+  const ignorar = new Set(['com','de','para','cm','kg','un','unid','-']);
+  return nome.split(' ').filter(p => !ignorar.has(p.toLowerCase())).slice(0,4).join(' ');
+}
+
+async function buscarTendencias(termos, aoAtualizarProgresso) {
+  aoAtualizarProgresso(1, 1);
+  const scores = await carregarTrendsJSON();
+  const resultado = {};
+  termos.forEach(t => { resultado[t] = scores[t] !== undefined ? scores[t] : 0; });
+  return resultado;
+}
+
+async function gerarRanking() {
+  const cat = document.getElementById('categoriaSelect').value;
+  const markup = parseFloat(markupRange.value);
+  const topN = parseInt(topNRange.value);
+  const comTendencia = document.getElementById('tendenciaToggle').checked;
+  const pesoTendencia = parseInt(pesoRange.value) / 100;
+
+  let filtrados = produtos.filter(p => p['Categoria'] === cat).map(p => {
+    const custo = parsePreco(p['Preço']);
+    const vendaSugerida = custo * markup;
+    const margemReais = vendaSugerida - custo;
+    return { ...p, _custo: custo, _venda: vendaSugerida, _margem: margemReais };
+  });
+
+  filtrados.sort((a,b) => b._margem - a._margem);
+
+  if (comTendencia) {
+    const candidatos = filtrados.slice(0, Math.max(topN * 3, 30)); // busca tendência num grupo maior, pra depois filtrar os melhores
+    candidatos.forEach(p => p._termoBusca = nomeParaBusca(p['Nome do Produto']));
+    const termosUnicos = [...new Set(candidatos.map(p => p._termoBusca))];
+
+    mostrarLoading(true, 0, termosUnicos.length);
+    const scores = await buscarTendencias(termosUnicos, (atual, total) => mostrarLoading(true, atual, total));
+    mostrarLoading(false);
+
+    candidatos.forEach(p => p._tendencia = scores[p._termoBusca] || 0);
+
+    const margensNorm = normalizar(candidatos.map(p => p._margem));
+    const tendNorm = normalizar(candidatos.map(p => p._tendencia));
+    candidatos.forEach((p, i) => {
+      p._score = tendNorm[i] * pesoTendencia + margensNorm[i] * (1 - pesoTendencia);
+    });
+    candidatos.sort((a,b) => b._score - a._score);
+    resultadoAtual = candidatos.slice(0, topN);
+  } else {
+    resultadoAtual = filtrados.slice(0, topN);
+  }
+
+  mostrarResultado(cat, comTendencia);
+}
+
+function mostrarLoading(ligado, atual, total) {
+  const overlay = document.getElementById('overlayLoading');
+  if (ligado) {
+    overlay.classList.add('show');
+    const pct = total ? Math.round((atual/total)*100) : 0;
+    document.getElementById('loadingTexto').textContent = `Consultando Google Trends... (${atual}/${total})`;
+    document.getElementById('loadingBar').style.width = pct + '%';
+  } else {
+    overlay.classList.remove('show');
+  }
+}
+
+function mostrarResultado(cat, comTendencia) {
+  document.getElementById('resTitulo').textContent = `Melhores produtos — ${cat}`;
+  document.getElementById('mProdutos').textContent = resultadoAtual.length;
+  const margemMedia = resultadoAtual.reduce((s,p) => s + p._margem, 0) / (resultadoAtual.length || 1);
+  document.getElementById('mMargem').textContent = 'R$ ' + margemMedia.toFixed(0);
+  document.getElementById('mTop').textContent = resultadoAtual[0] ? resultadoAtual[0]['Nome do Produto'].slice(0,18)+'…' : '-';
+
+  const avisoEl = document.getElementById('avisoAtualizacao');
+  if (comTendencia && trendsGeradoEm) {
+    const data = new Date(trendsGeradoEm);
+    avisoEl.textContent = `Tendências atualizadas em ${data.toLocaleDateString('pt-BR')} às ${data.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}`;
+    avisoEl.style.display = 'block';
+  } else {
+    avisoEl.style.display = 'none';
+  }
+
+  document.getElementById('theadResultado').innerHTML = comTendencia
+    ? '<th></th><th>Produto</th><th>Custo</th><th>Venda sug.</th><th>Margem</th><th>Tendência</th><th>Score</th>'
+    : '<th></th><th>Produto</th><th>Custo</th><th>Venda sug.</th><th>Margem</th>';
+
+  const tbody = document.getElementById('tabelaResultado');
+  if (resultadoAtual.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Nenhum produto encontrado</td></tr>`;
+  } else {
+    tbody.innerHTML = resultadoAtual.map(p => `
+      <tr>
+        <td>${p['Imagem Principal'] ? `<img class="prod" src="${p['Imagem Principal']}" onerror="this.style.display='none'">` : ''}</td>
+        <td>${p['Nome do Produto']}</td>
+        <td>R$ ${p._custo.toFixed(2)}</td>
+        <td>R$ ${p._venda.toFixed(2)}</td>
+        <td>R$ ${p._margem.toFixed(2)}</td>
+        ${comTendencia ? `<td>${Math.round(p._tendencia)}</td><td>${p._score.toFixed(1)}</td>` : ''}
+      </tr>
+    `).join('');
+  }
+  document.getElementById('overlayResultado').classList.add('show');
+}
+
+document.getElementById('btnFechar').addEventListener('click', () => {
+  document.getElementById('overlayResultado').classList.remove('show');
+});
+document.getElementById('overlayResultado').addEventListener('click', (e) => {
+  if (e.target.id === 'overlayResultado') e.target.classList.remove('show');
+});
+
+document.getElementById('btnBaixar').addEventListener('click', () => {
+  const temTendencia = resultadoAtual[0] && resultadoAtual[0]._score !== undefined;
+  const cabecalho = ['Nome do Produto','Categoria','Preço de Custo','Preço de Venda Sugerido','Margem (R$)'];
+  if (temTendencia) cabecalho.push('Score Tendência','Score Final');
+  const linhas = resultadoAtual.map(p => {
+    const base = [p['Nome do Produto'], p['Categoria'], p._custo.toFixed(2), p._venda.toFixed(2), p._margem.toFixed(2)];
+    if (temTendencia) base.push(Math.round(p._tendencia), p._score.toFixed(1));
+    return base.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [cabecalho.join(','), ...linhas].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ranking_produtos.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+</script>
+</body>
+</html>
