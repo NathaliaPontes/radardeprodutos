@@ -1,0 +1,38 @@
+name: Atualizar tendências
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # a cada 15 minutos
+  workflow_dispatch:        # também permite rodar manualmente pelo botão "Run workflow" no GitHub
+
+permissions:
+  contents: write
+
+concurrency:
+  group: atualizar-tendencias
+  cancel-in-progress: true
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: pip install pandas pytrends
+
+      - name: Gerar trends.json
+        run: python scripts/gerar_tendencias.py
+
+      - name: Salvar o resultado no repositório
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Atualização automática de tendências"
+          file_pattern: trends.json
