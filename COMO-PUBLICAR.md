@@ -1,4 +1,4 @@
-# Ranking WeDrop — usando só GitHub (Pages + Actions)
+# Ranking Ao Vico — usando só GitHub (Pages + Actions)
 
 Tudo roda dentro do GitHub, sem Netlify e sem servidor separado:
 - **GitHub Pages** hospeda o site (`index.html`) de graça
