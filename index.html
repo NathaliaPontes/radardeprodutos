@@ -3,274 +3,524 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ranking Ao Vivo</title>
+<title>Radar de Produtos</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
   :root{
-    --kraft: #C9915B;
-    --kraft-dark: #A9713E;
-    --ink: #1E1B16;
-    --paper: #F3EDE1;
-    --paper-2: #E9E0CE;
-    --teal: #1F4B4A;
-    --stamp-red: #B5432E;
-    --line: #D8CBB0;
+    --bg: #0B0E14;
+    --bg-elev: #12161F;
+    --surface: #171C27;
+    --surface-2: #1E2431;
+    --border: #262D3D;
+    --border-soft: #1F2531;
+    --text: #EDEFF4;
+    --text-dim: #8B93A7;
+    --text-faint: #5C6478;
+    --accent: #6C5CE7;
+    --accent-2: #00D9C0;
+    --accent-soft: #6C5CE71A;
+    --success: #22C58B;
+    --success-soft: #22C58B1F;
+    --danger: #F0556B;
+    --danger-soft: #F0556B1F;
+    --warn: #F5A623;
+    --shadow: 0 8px 30px rgba(0,0,0,0.35);
+    --radius: 14px;
   }
-  *{box-sizing:border-box;}
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
   body{
     margin:0;
-    background: var(--ink);
-    color: var(--paper);
+    background:
+      radial-gradient(1200px 600px at 85% -10%, #6C5CE722, transparent),
+      radial-gradient(900px 500px at -5% 10%, #00D9C014, transparent),
+      var(--bg);
+    color: var(--text);
     font-family: 'Inter', sans-serif;
     min-height:100vh;
   }
-  .wrap{ max-width: 960px; margin: 0 auto; padding: 32px 20px 80px; }
 
-  /* Header estilo etiqueta de envio */
-  .label-header{
-    background: var(--paper);
-    color: var(--ink);
-    border-radius: 4px;
-    padding: 28px 32px;
-    position: relative;
-    border: 2px dashed var(--kraft-dark);
-    margin-bottom: 32px;
+  /* ---------- Layout ---------- */
+  .app{
+    display:grid;
+    grid-template-columns: 260px 1fr;
+    min-height:100vh;
   }
-  .label-header::before{
-    content: "EM TEMPO REAL";
-    position:absolute; top:-11px; left:24px;
-    background:var(--ink); color:var(--paper);
-    font-family:'Space Mono', monospace;
-    font-size:11px; letter-spacing:2px;
-    padding:3px 10px;
-  }
-  .label-header h1{
-    font-family:'Fraunces', serif;
-    font-weight:700;
-    font-size: 40px;
-    margin: 6px 0 4px;
-    letter-spacing: -0.5px;
-  }
-  .label-header p{
-    font-family:'Space Mono', monospace;
-    font-size:14px;
-    color:var(--kraft-dark);
-    margin:0;
+  @media (max-width: 860px){
+    .app{ grid-template-columns: 1fr; }
+    .sidebar{ position:relative; width:100%; border-right:none; border-bottom:1px solid var(--border); }
+    .sidebar-nav{ flex-direction:row; overflow-x:auto; gap:6px; }
+    .nav-item{ white-space:nowrap; }
   }
 
-  /* Cartões numerados (estilo etapas de despacho) */
+  .sidebar{
+    background: var(--bg-elev);
+    border-right:1px solid var(--border);
+    padding: 26px 18px;
+    display:flex; flex-direction:column; gap:28px;
+    position:sticky; top:0; height:100vh;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding:0 6px; }
+  .brand-mark{
+    width:36px; height:36px; border-radius:10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; flex-shrink:0;
+  }
+  .brand-text{ font-family:'Manrope'; font-weight:800; font-size:16px; line-height:1.2; }
+  .brand-text span{ display:block; font-family:'Inter'; font-weight:500; font-size:11.5px; color:var(--text-dim); }
+
+  .sidebar-nav{ display:flex; flex-direction:column; gap:4px; }
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 14px; border-radius:10px;
+    color: var(--text-dim); font-weight:600; font-size:14px;
+    cursor:pointer; border:1px solid transparent; background:none;
+    text-align:left; font-family:'Inter'; width:100%;
+    transition: background .15s, color .15s;
+  }
+  .nav-item:hover{ background: var(--surface); color: var(--text); }
+  .nav-item.active{ background: var(--accent-soft); color: var(--text); border-color:#6C5CE733; }
+  .nav-item .ico{ font-size:16px; width:20px; text-align:center; }
+
+  .sidebar-foot{ margin-top:auto; }
+  .status-chip{
+    display:flex; align-items:center; gap:8px;
+    background: var(--surface); border:1px solid var(--border);
+    border-radius:10px; padding:10px 12px;
+    font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono';
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 0 3px var(--success-soft); flex-shrink:0; }
+
+  .main{ padding: 32px 40px 80px; max-width:1080px; }
+  @media (max-width:640px){ .main{ padding:20px 16px 60px; } }
+
+  .page-header{ margin-bottom:28px; }
+  .page-header h1{
+    font-family:'Manrope'; font-weight:800; font-size:28px; margin:0 0 6px;
+    letter-spacing:-0.3px;
+  }
+  .page-header p{ color:var(--text-dim); margin:0; font-size:14.5px; }
+
+  .tabpane{ display:none; }
+  .tabpane.active{ display:block; }
+
+  /* ---------- Cards ---------- */
   .card{
-    background: #262219;
-    border: 1px solid #3a3428;
-    border-radius: 10px;
-    padding: 26px 28px;
-    margin-bottom: 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
   }
-  .card.disabled{ opacity: 0.4; pointer-events:none; }
+  .card.disabled{ opacity: 0.45; pointer-events:none; }
   .card-title{
     display:flex; align-items:center; gap:12px;
-    font-family:'Fraunces', serif;
-    font-size:20px; font-weight:700;
-    margin: 0 0 18px;
+    font-family:'Manrope'; font-weight:700;
+    font-size:17px; margin: 0 0 18px;
   }
   .badge{
-    background: var(--kraft);
-    color: var(--ink);
-    width: 30px; height:30px;
-    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #8B7CF6);
+    color: #fff;
+    width: 28px; height:28px;
+    border-radius: 9px;
     display:flex; align-items:center; justify-content:center;
-    font-family:'Space Mono', monospace;
-    font-weight:700; font-size:14px;
+    font-weight:700; font-size:13px;
     flex-shrink:0;
   }
 
-  /* Dropzone */
+  /* ---------- Dropzone ---------- */
   .dropzone{
-    border: 2px dashed #4a4332;
-    border-radius: 8px;
-    padding: 36px 20px;
+    border: 1.5px dashed var(--border);
+    border-radius: 12px;
+    padding: 40px 20px;
     text-align:center;
     cursor:pointer;
+    background: var(--bg-elev);
     transition: border-color .15s, background .15s;
   }
   .dropzone:hover, .dropzone.drag{
-    border-color: var(--kraft);
-    background: #2c2717;
+    border-color: var(--accent);
+    background: var(--accent-soft);
   }
-  .dropzone svg{ margin-bottom:10px; opacity:.7; }
-  .dropzone .main{ font-weight:600; font-size:15px; }
-  .dropzone .sub{ font-family:'Space Mono', monospace; font-size:12px; color:#9c9382; margin-top:6px;}
+  .dropzone svg{ margin-bottom:10px; opacity:.8; }
+  .dropzone .main-txt{ font-weight:600; font-size:14.5px; }
+  .dropzone .sub{ font-family:'JetBrains Mono'; font-size:11.5px; color:var(--text-faint); margin-top:6px;}
   input[type=file]{ display:none; }
   .file-ok{
     display:flex; align-items:center; justify-content:space-between;
-    background:#2c2717; border-radius:8px; padding:14px 18px;
-    font-family:'Space Mono', monospace; font-size:13px;
+    background: var(--success-soft); border:1px solid #22C58B33; border-radius:10px; padding:14px 18px;
+    font-family:'JetBrains Mono'; font-size:12.5px; color:var(--text);
   }
   .file-ok button{
-    background:none; border:1px solid #4a4332; color:var(--paper);
-    border-radius:6px; padding:6px 12px; cursor:pointer; font-family:'Inter';
+    background: var(--surface-2); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:6px 12px; cursor:pointer; font-family:'Inter'; font-size:12.5px;
   }
 
-  /* Controles */
-  label.field-label{ display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:#c9bda0;}
-  select, .val-display{
+  /* ---------- Form controls ---------- */
+  label.field-label{ display:block; font-size:13px; font-weight:600; margin-bottom:8px; color:var(--text-dim);}
+  select, input[type=text], input[type=number], .val-display{
     width:100%;
-    background:#1a1712; color:var(--paper);
-    border:1px solid #4a4332; border-radius:8px;
-    padding:10px 12px; font-size:14px; font-family:'Inter';
+    background: var(--bg-elev); color: var(--text);
+    border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; font-size:14px; font-family:'Inter';
+    transition: border-color .15s;
   }
+  select:focus, input:focus, textarea:focus{ outline:none; border-color: var(--accent); }
   .field{ margin-bottom:20px; }
   .field:last-child{ margin-bottom:0; }
   .row2{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
   @media (max-width:640px){ .row2{grid-template-columns:1fr;} }
 
-  input[type=range]{ width:100%; accent-color: var(--kraft); }
-  .slider-val{ font-family:'Space Mono', monospace; color:var(--kraft); font-weight:700; }
+  input[type=range]{ width:100%; accent-color: var(--accent); }
+  .slider-val{ font-family:'JetBrains Mono'; color: var(--accent-2); font-weight:700; }
 
   .toggle-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
-  .switch{ position:relative; width:44px; height:24px; }
+  .switch{ position:relative; width:42px; height:24px; flex-shrink:0; }
   .switch input{ opacity:0; width:0; height:0; }
   .slider-switch{
     position:absolute; cursor:pointer; inset:0;
-    background:#4a4332; border-radius:24px; transition:.15s;
+    background: var(--surface-2); border:1px solid var(--border); border-radius:24px; transition:.15s;
   }
   .slider-switch:before{
-    content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px;
-    background:var(--paper); border-radius:50%; transition:.15s;
+    content:""; position:absolute; height:16px; width:16px; left:3px; top:3px;
+    background:var(--text-dim); border-radius:50%; transition:.15s;
   }
-  input:checked + .slider-switch{ background: var(--kraft); }
-  input:checked + .slider-switch:before{ transform: translateX(20px); }
+  input:checked + .slider-switch{ background: var(--accent); border-color: var(--accent); }
+  input:checked + .slider-switch:before{ transform: translateX(18px); background:#fff; }
 
-  /* Botão principal */
+  textarea{
+    width:100%; min-height:120px;
+    background: var(--bg-elev); color: var(--text);
+    border:1px solid var(--border); border-radius:10px;
+    padding:12px 13px; font-size:14px; font-family:'Inter';
+    resize:vertical;
+  }
+
+  /* ---------- Buttons ---------- */
   .btn-main{
     width:100%;
-    background: var(--kraft);
-    color: var(--ink);
-    border:none; border-radius:10px;
-    padding:16px; font-size:16px; font-weight:700;
+    background: linear-gradient(135deg, var(--accent), #8B7CF6);
+    color: #fff;
+    border:none; border-radius:11px;
+    padding:14px; font-size:14.5px; font-weight:700;
     font-family:'Inter'; cursor:pointer;
     margin-top:6px;
-    transition: transform .1s;
+    box-shadow: 0 4px 16px #6C5CE740;
+    transition: transform .12s, box-shadow .12s;
   }
-  .btn-main:hover{ transform: translateY(-1px); }
-  .btn-main:disabled{ background:#4a4332; color:#8a8272; cursor:not-allowed; transform:none;}
+  .btn-main:hover{ transform: translateY(-1px); box-shadow: 0 6px 20px #6C5CE755; }
+  .btn-main:disabled{ background: var(--surface-2); color:var(--text-faint); box-shadow:none; cursor:not-allowed; transform:none;}
 
-  .hint{ font-family:'Space Mono', monospace; font-size:12px; color:#9c9382; margin-top:10px; }
+  .btn-secondary{
+    background: var(--surface-2); border:1px solid var(--border); color:var(--text);
+    border-radius:10px; padding:10px 16px; cursor:pointer; font-family:'Inter'; font-weight:600; font-size:13px;
+  }
+  .btn-secondary:hover{ border-color: var(--accent); }
+  .btn-danger-sm{
+    background:none; border:none; color: var(--danger); cursor:pointer; font-size:15px;
+  }
+  .btn-copy{
+    background: var(--surface-2); border:1px solid var(--border); color:var(--text);
+    border-radius:10px; padding:10px 14px; cursor:pointer; font-family:'Inter'; font-size:12.5px;
+    white-space:nowrap; font-weight:600;
+  }
+  .btn-copy:hover{ border-color: var(--accent); }
 
-  /* Modal */
+  .hint{ font-family:'JetBrains Mono'; font-size:11.5px; color:var(--text-faint); margin-top:10px; }
+
+  /* ---------- Modal ---------- */
   .overlay{
-    display:none; position:fixed; inset:0; background:rgba(10,9,6,.7);
+    display:none; position:fixed; inset:0; background: rgba(6,8,13,.75);
+    backdrop-filter: blur(4px);
     align-items:center; justify-content:center; z-index:100; padding:20px;
   }
   .overlay.show{ display:flex; }
   .modal{
-    background: var(--paper); color: var(--ink);
-    border-radius: 12px; padding: 30px 32px;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 18px; padding: 30px 32px;
     max-width: 560px; width:100%;
     max-height: 85vh; overflow-y:auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
   }
-  .modal.wide{ max-width: 820px; }
-  .modal h2{
-    font-family:'Fraunces', serif; font-size:24px; margin-top:0;
-  }
-  .modal-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:14px;}
-  .modal-row span:first-child{ color:#6b6252; }
+  .modal.wide{ max-width: 860px; }
+  .modal h2{ font-family:'Manrope'; font-weight:800; font-size:22px; margin-top:0; }
+  .modal-row{ display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border-soft); font-size:14px;}
+  .modal-row span:first-child{ color:var(--text-dim); }
   .modal-row span:last-child{ font-weight:600; }
   .modal-actions{ display:flex; gap:12px; margin-top:22px; }
   .modal-actions button{
-    flex:1; padding:12px; border-radius:8px; font-weight:700; cursor:pointer;
+    flex:1; padding:13px; border-radius:11px; font-weight:700; cursor:pointer;
     border:none; font-family:'Inter'; font-size:14px;
   }
-  .btn-confirm{ background:var(--teal); color:var(--paper); }
-  .btn-cancel{ background:transparent; border:1px solid var(--line) !important; color:var(--ink); }
+  .btn-confirm{ background: linear-gradient(135deg, var(--accent), #8B7CF6); color:#fff; }
+  .btn-cancel{ background:transparent; border:1px solid var(--border) !important; color:var(--text); }
 
-  /* Loading */
-  .loading-box{ text-align:center; padding: 20px 0; }
-  .progress-track{ background:var(--line); border-radius:20px; height:10px; overflow:hidden; margin-top:16px;}
-  .progress-fill{ background:var(--kraft-dark); height:100%; width:0%; transition:width .2s; }
+  .loading-box{ text-align:center; padding: 16px 0; }
+  .progress-track{ background: var(--surface-2); border-radius:20px; height:8px; overflow:hidden; margin-top:16px;}
+  .progress-fill{ background: linear-gradient(90deg, var(--accent), var(--accent-2)); height:100%; width:0%; transition:width .2s; }
 
-  /* Resultado */
   .stamp{
-    display:inline-block; border:3px solid var(--stamp-red); color:var(--stamp-red);
-    border-radius: 8px; padding: 4px 12px; font-family:'Space Mono', monospace;
-    font-weight:700; font-size:13px; transform: rotate(-4deg); letter-spacing:1px;
+    display:inline-block; background: var(--success-soft); color: var(--success);
+    border-radius: 20px; padding: 5px 14px;
+    font-family:'JetBrains Mono'; font-weight:700; font-size:11.5px; letter-spacing:0.5px;
   }
   .metrics{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin: 18px 0; }
-  .metric{ background:var(--paper-2); border-radius:8px; padding:14px; text-align:center; }
-  .metric .num{ font-family:'Fraunces', serif; font-size:26px; font-weight:700; }
-  .metric .lab{ font-size:11px; color:#6b6252; font-family:'Space Mono', monospace; }
+  .metric{ background: var(--bg-elev); border:1px solid var(--border); border-radius:12px; padding:16px; text-align:center; }
+  .metric .num{ font-family:'Manrope'; font-size:24px; font-weight:800; }
+  .metric .lab{ font-size:10.5px; color:var(--text-faint); font-family:'JetBrains Mono'; margin-top:4px; letter-spacing:0.5px; }
 
   table{ width:100%; border-collapse: collapse; font-size:13px; margin-top:10px;}
-  th{ text-align:left; font-family:'Space Mono', monospace; font-size:11px; color:#6b6252; padding:8px 6px; border-bottom:2px solid var(--ink); }
-  td{ padding:8px 6px; border-bottom:1px solid var(--line); }
-  tr:first-child td{ background: #FFF3DD; font-weight:700; }
-  img.prod{ width:36px; height:36px; object-fit:cover; border-radius:5px; vertical-align:middle; }
+  th{ text-align:left; font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-faint); padding:10px 8px; border-bottom:1px solid var(--border); letter-spacing:0.5px; }
+  td{ padding:10px 8px; border-bottom:1px solid var(--border-soft); }
+  tr:first-child td{ background: var(--accent-soft); font-weight:700; }
+  img.prod{ width:34px; height:34px; object-fit:cover; border-radius:8px; vertical-align:middle; }
 
-  .empty-msg{ text-align:center; color:#9c9382; font-family:'Space Mono', monospace; font-size:13px; padding:10px 0;}
+  .empty-msg{ text-align:center; color:var(--text-faint); font-family:'JetBrains Mono'; font-size:12.5px; padding:14px 0;}
+
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .chip{
+    background: var(--bg-elev); color:var(--text); border:1px solid var(--border);
+    border-radius:20px; padding:6px 14px;
+    font-family:'JetBrains Mono'; font-size:11.5px;
+    display:flex; align-items:center; gap:6px;
+  }
+
+  .char-count{ font-family:'JetBrains Mono'; font-size:11.5px; margin-top:6px; }
+  .char-count.ok{ color: var(--success); }
+  .char-count.warn{ color: var(--danger); }
+
+  .copy-row{ display:flex; gap:10px; align-items:flex-start; }
+  .copy-row > div{ flex:1; }
+
+  .status-pill{
+    display:inline-block; border-radius:20px; padding:3px 11px;
+    font-family:'JetBrains Mono'; font-size:10.5px; font-weight:700;
+  }
+  .status-pill.validado{ background: var(--success-soft); color: var(--success); }
+  .status-pill.nao-validou{ background: var(--danger-soft); color: var(--danger); }
+  .status-pill.testando{ background: #F5A6231F; color: var(--warn); }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
 
-  <div class="label-header">
-    <h1>Ranking Ao Vivo</h1>
-    <p>Suba o catálogo → escolha a categoria → veja os melhores produtos pra vender agora.</p>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">📦</div>
+      <div class="brand-text">Radar de Produtos<span>Catálogo &amp; ADS</span></div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="tabRanking"><span class="ico">📊</span> Ranking</button>
+      <button class="nav-item" data-tab="tabResultados"><span class="ico">✅</span> Resultados</button>
+      <button class="nav-item" data-tab="tabSEO"><span class="ico">🔍</span> SEO</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="status-chip"><span class="dot"></span> Tendência ao vivo · 15 min</div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+  <div class="page-header">
+    <h1>Radar de Produtos</h1>
+    <p>Suba o catálogo de qualquer fornecedor → escolha a categoria → veja os melhores produtos pra vender agora.</p>
   </div>
 
-  <!-- ETAPA 1 -->
-  <div class="card">
-    <div class="card-title"><span class="badge">1</span> Catálogo</div>
-    <div id="dropzone" class="dropzone">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9915B" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-      <div class="main">Clique ou arraste o CSV exportado da WeDrop</div>
-      <div class="sub">botão "Exportar" no painel dash.wedrop.com.br</div>
-      <input type="file" id="fileInput" accept=".csv">
-    </div>
-    <div id="fileOk" class="file-ok" style="display:none;">
-      <span id="fileOkText"></span>
-      <button id="trocarArquivo">Trocar arquivo</button>
-    </div>
-  </div>
+  <!-- ABA 1: RANKING -->
+  <div id="tabRanking" class="tabpane active">
 
-  <!-- ETAPA 2 -->
-  <div class="card disabled" id="cardConfig">
-    <div class="card-title"><span class="badge">2</span> Configurações</div>
-    <div class="row2">
-      <div>
-        <div class="field">
-          <label class="field-label">Categoria</label>
-          <select id="categoriaSelect"></select>
-        </div>
-        <div class="field">
-          <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
-          <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
-        </div>
+    <!-- ETAPA 1 -->
+    <div class="card">
+      <div class="card-title"><span class="badge">1</span> Catálogo</div>
+      <div id="dropzone" class="dropzone">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+        <div class="main-txt">Clique ou arraste o CSV do seu catálogo</div>
+        <div class="sub">colunas esperadas: Nome do Produto, Categoria, Preço</div>
+        <input type="file" id="fileInput" accept=".csv">
       </div>
-      <div>
-        <div class="toggle-row">
-          <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
-          <label class="switch">
-            <input type="checkbox" id="tendenciaToggle" checked>
-            <span class="slider-switch"></span>
-          </label>
-        </div>
-        <div class="field">
-          <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
-          <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
-        </div>
-        <div class="field">
-          <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
-          <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
-        </div>
+      <div id="fileOk" class="file-ok" style="display:none;">
+        <span id="fileOkText"></span>
+        <button id="trocarArquivo">Trocar arquivo</button>
       </div>
     </div>
-    <p class="hint" id="qtdCategoria"></p>
-    <button class="btn-main" id="btnGerar">🔍 Gerar ranking</button>
-    <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
+
+    <!-- ETAPA 2 -->
+    <div class="card disabled" id="cardConfig">
+      <div class="card-title"><span class="badge">2</span> Configurações</div>
+      <div class="row2">
+        <div>
+          <div class="field">
+            <label class="field-label">Categoria</label>
+            <select id="categoriaSelect"></select>
+          </div>
+          <div class="field">
+            <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
+            <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
+          </div>
+        </div>
+        <div>
+          <div class="toggle-row">
+            <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
+            <label class="switch">
+              <input type="checkbox" id="tendenciaToggle" checked>
+              <span class="slider-switch"></span>
+            </label>
+          </div>
+          <div class="field">
+            <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
+            <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
+          </div>
+          <div class="field">
+            <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
+            <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
+          </div>
+        </div>
+      </div>
+      <p class="hint" id="qtdCategoria"></p>
+      <button class="btn-main" id="btnGerar">🔍 Gerar ranking</button>
+      <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
+    </div>
+
   </div>
 
+  <!-- ABA 2: RESULTADOS -->
+  <div id="tabResultados" class="tabpane">
+    <div class="card">
+      <div class="card-title"><span class="badge">✓</span> Registrar teste de anúncio</div>
+      <div class="row2">
+        <div>
+          <div class="field">
+            <label class="field-label">Produto</label>
+            <input type="text" id="resProduto" placeholder="Nome do produto testado">
+          </div>
+          <div class="field">
+            <label class="field-label">Categoria</label>
+            <input type="text" id="resCategoria" placeholder="Ex: Brinquedos">
+          </div>
+          <div class="field">
+            <label class="field-label">Dias testados</label>
+            <input type="number" id="resDias" min="1" value="5">
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <label class="field-label">Gasto em ADS (R$)</label>
+            <input type="number" id="resGasto" min="0" step="0.01" placeholder="Ex: 50">
+          </div>
+          <div class="field">
+            <label class="field-label">Vendas realizadas</label>
+            <input type="number" id="resVendas" min="0" value="0">
+          </div>
+          <div class="field">
+            <label class="field-label">Receita gerada (R$)</label>
+            <input type="number" id="resReceita" min="0" step="0.01" placeholder="Ex: 120">
+          </div>
+        </div>
+      </div>
+      <button class="btn-main" id="btnAddResultado">➕ Adicionar registro</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge">📈</span> Resumo</div>
+      <div class="metrics" id="resumoMetrics">
+        <div class="metric"><div class="num" id="rmTotal">0</div><div class="lab">TESTADOS</div></div>
+        <div class="metric"><div class="num" id="rmValidados">0</div><div class="lab">VALIDADOS</div></div>
+        <div class="metric"><div class="num" id="rmTaxa">-</div><div class="lab">TAXA DE ACERTO</div></div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label class="field-label">ROAS mínimo pra considerar "validado" — <span class="slider-val" id="roasMinVal">2.0x</span></label>
+        <input type="range" id="roasMinRange" min="1" max="5" step="0.1" value="2">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="badge">📋</span> Histórico</div>
+      <div style="max-height:320px; overflow-y:auto;">
+        <table>
+          <thead><tr><th>Produto</th><th>Categoria</th><th>Gasto</th><th>Receita</th><th>ROAS</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tabelaHistorico"><tr><td colspan="7" class="empty-msg">Nenhum teste registrado ainda</td></tr></tbody>
+        </table>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn-secondary" id="btnBaixarHistorico" style="flex:1;">⬇️ Baixar backup (JSON)</button>
+        <button class="btn-secondary" id="btnCarregarHistorico" style="flex:1;">⬆️ Carregar backup</button>
+        <input type="file" id="inputCarregarHistorico" accept=".json" style="display:none;">
+      </div>
+      <p class="hint">O histórico fica só nesta sessão do navegador. Baixe o backup pra não perder e carregue de novo na próxima vez que abrir o site.</p>
+    </div>
+  </div>
+
+  <!-- ABA 3: SEO -->
+  <div id="tabSEO" class="tabpane">
+    <div class="card">
+      <div class="card-title"><span class="badge">🔍</span> Gerar SEO otimizado</div>
+      <div class="row2">
+        <div>
+          <div class="field">
+            <label class="field-label">Plataforma</label>
+            <select id="seoPlataforma">
+              <option value="shopee">Shopee</option>
+              <option value="mercadolivre">Mercado Livre</option>
+              <option value="amazon">Amazon</option>
+              <option value="generico">Genérico</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label">Nome do produto</label>
+            <input type="text" id="seoNome" placeholder="Ex: Jogo de Panelas Antiaderente 5 Peças">
+          </div>
+          <div class="field">
+            <label class="field-label">Categoria</label>
+            <input type="text" id="seoCategoria" placeholder="Ex: Utilidades Domésticas">
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <label class="field-label">Marca (opcional)</label>
+            <input type="text" id="seoMarca" placeholder="Ex: Tramontina">
+          </div>
+          <div class="field">
+            <label class="field-label">Diferencial / benefício principal (opcional)</label>
+            <input type="text" id="seoDiferencial" placeholder="Ex: antiaderente, fácil de limpar">
+          </div>
+        </div>
+      </div>
+      <button class="btn-main" id="btnGerarSEO">✨ Gerar título, palavras-chave e descrição</button>
+    </div>
+
+    <div class="card" id="cardSeoResultado" style="display:none;">
+      <div class="card-title"><span class="badge">📝</span> Resultado</div>
+
+      <label class="field-label">Título otimizado</label>
+      <div class="copy-row">
+        <div><textarea id="seoTitulo" style="min-height:60px;" readonly></textarea></div>
+        <button class="btn-copy" data-copy="seoTitulo">Copiar</button>
+      </div>
+      <p class="char-count" id="seoTituloContagem"></p>
+
+      <label class="field-label" style="margin-top:20px; display:block;">Palavras-chave sugeridas</label>
+      <div class="chips" id="seoChips"></div>
+
+      <label class="field-label" style="margin-top:20px; display:block;">Descrição (modelo editável)</label>
+      <div class="copy-row">
+        <div><textarea id="seoDescricao" style="min-height:180px;"></textarea></div>
+        <button class="btn-copy" data-copy="seoDescricao">Copiar</button>
+      </div>
+
+      <div id="seoDicas" class="card" style="margin-top:20px; background:var(--bg-elev);"></div>
+    </div>
+  </div>
+
+
+  </main>
 </div>
+
 
 <!-- MODAL CONFIRMAÇÃO -->
 <div class="overlay" id="overlayConfirm">
@@ -591,6 +841,269 @@ document.getElementById('btnBaixar').addEventListener('click', () => {
   a.href = url; a.download = 'ranking_produtos.csv';
   a.click();
   URL.revokeObjectURL(url);
+});
+
+// =================================================================
+// NAVEGAÇÃO EM ABAS
+// =================================================================
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tabpane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// =================================================================
+// ABA RESULTADOS — histórico de testes salvo no navegador (localStorage)
+// =================================================================
+const CHAVE_HISTORICO = 'radar_historico_testes';
+
+function carregarHistorico() {
+  try {
+    return JSON.parse(localStorage.getItem(CHAVE_HISTORICO)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+function salvarHistorico(lista) {
+  localStorage.setItem(CHAVE_HISTORICO, JSON.stringify(lista));
+}
+
+function renderizarHistorico() {
+  const lista = carregarHistorico();
+  const roasMin = parseFloat(document.getElementById('roasMinRange').value);
+  const tbody = document.getElementById('tabelaHistorico');
+
+  if (lista.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-msg">Nenhum teste registrado ainda</td></tr>`;
+  } else {
+    tbody.innerHTML = lista.map((r, i) => {
+      const roas = r.gasto > 0 ? (r.receita / r.gasto) : 0;
+      const status = r.gasto === 0 ? 'testando' : (roas >= roasMin ? 'validado' : 'nao-validou');
+      const statusTexto = status === 'testando' ? 'Sem gasto' : (status === 'validado' ? 'Validado' : 'Não validou');
+      return `
+        <tr>
+          <td>${r.produto}</td>
+          <td>${r.categoria || '-'}</td>
+          <td>R$ ${r.gasto.toFixed(2)}</td>
+          <td>R$ ${r.receita.toFixed(2)}</td>
+          <td>${roas.toFixed(2)}x</td>
+          <td><span class="status-pill ${status}">${statusTexto}</span></td>
+          <td><button class="btn-danger-sm" data-del="${i}" title="Remover">✕</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lista2 = carregarHistorico();
+      lista2.splice(parseInt(btn.dataset.del), 1);
+      salvarHistorico(lista2);
+      renderizarHistorico();
+    });
+  });
+
+  // Resumo
+  const comGasto = lista.filter(r => r.gasto > 0);
+  const validados = comGasto.filter(r => (r.receita / r.gasto) >= roasMin);
+  document.getElementById('rmTotal').textContent = lista.length;
+  document.getElementById('rmValidados').textContent = validados.length;
+  document.getElementById('rmTaxa').textContent = comGasto.length
+    ? Math.round((validados.length / comGasto.length) * 100) + '%'
+    : '-';
+}
+
+document.getElementById('btnAddResultado').addEventListener('click', () => {
+  const produto = document.getElementById('resProduto').value.trim();
+  if (!produto) { alert('Preencha o nome do produto.'); return; }
+
+  const registro = {
+    produto,
+    categoria: document.getElementById('resCategoria').value.trim(),
+    dias: parseInt(document.getElementById('resDias').value) || 0,
+    gasto: parseFloat(document.getElementById('resGasto').value) || 0,
+    vendas: parseInt(document.getElementById('resVendas').value) || 0,
+    receita: parseFloat(document.getElementById('resReceita').value) || 0,
+    data: new Date().toISOString(),
+  };
+
+  const lista = carregarHistorico();
+  lista.unshift(registro);
+  salvarHistorico(lista);
+  renderizarHistorico();
+
+  // Limpar formulário
+  ['resProduto','resCategoria','resGasto','resReceita'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('resDias').value = 5;
+  document.getElementById('resVendas').value = 0;
+});
+
+document.getElementById('roasMinRange').addEventListener('input', (e) => {
+  document.getElementById('roasMinVal').textContent = parseFloat(e.target.value).toFixed(1) + 'x';
+  renderizarHistorico();
+});
+
+document.getElementById('btnBaixarHistorico').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(carregarHistorico(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'backup_historico_radar.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btnCarregarHistorico').addEventListener('click', () => {
+  document.getElementById('inputCarregarHistorico').click();
+});
+document.getElementById('inputCarregarHistorico').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const dados = JSON.parse(ev.target.result);
+      if (Array.isArray(dados)) {
+        salvarHistorico(dados);
+        renderizarHistorico();
+        alert('Backup carregado com sucesso!');
+      }
+    } catch (err) {
+      alert('Arquivo inválido.');
+    }
+  };
+  reader.readAsText(file);
+});
+
+renderizarHistorico();
+
+// =================================================================
+// ABA SEO — gerador de título, palavras-chave e descrição
+// =================================================================
+const LIMITES_TITULO = { shopee: 120, mercadolivre: 60, amazon: 200, generico: 100 };
+
+const MODIFICADORES_KEYWORD = ['original', 'promoção', 'kit', 'oferta', 'barato', 'premium'];
+
+function gerarPalavrasChave(nome, categoria, diferencial) {
+  const palavrasNome = nome.split(/\s+/).filter(p => p.length > 2);
+  const chaves = new Set();
+
+  chaves.add(nome.trim());
+  if (categoria) chaves.add(`${categoria.trim()}`);
+  if (categoria) chaves.add(`${palavrasNome.slice(0,2).join(' ')} ${categoria.trim()}`.trim());
+  if (diferencial) {
+    diferencial.split(',').forEach(d => {
+      if (d.trim()) chaves.add(`${palavrasNome.slice(0,2).join(' ')} ${d.trim()}`.trim());
+    });
+  }
+  MODIFICADORES_KEYWORD.slice(0,3).forEach(mod => {
+    chaves.add(`${palavrasNome.slice(0,3).join(' ')} ${mod}`.trim());
+  });
+
+  return [...chaves].filter(Boolean).slice(0, 8);
+}
+
+function gerarTitulo(plataforma, nome, categoria, marca, diferencial) {
+  const limite = LIMITES_TITULO[plataforma];
+  let partes = [];
+
+  if (plataforma === 'mercadolivre') {
+    // ML prioriza: Nome + atributo principal, curto e direto
+    partes = [nome, diferencial ? diferencial.split(',')[0].trim() : ''];
+  } else if (plataforma === 'amazon') {
+    partes = [marca, nome, categoria, diferencial];
+  } else {
+    // Shopee e genérico: palavra-chave forte primeiro, depois nome, marca, diferencial
+    partes = [nome, marca, categoria, diferencial];
+  }
+
+  let titulo = partes.filter(Boolean).join(' - ');
+  if (titulo.length > limite) titulo = titulo.slice(0, limite - 1).trim() + '…';
+  return { titulo, limite };
+}
+
+function gerarDescricao(plataforma, nome, categoria, marca, diferencial) {
+  const beneficios = diferencial
+    ? diferencial.split(',').map(d => `✔ ${d.trim().charAt(0).toUpperCase() + d.trim().slice(1)}`).join('\n')
+    : '✔ [adicione aqui os principais benefícios do produto]';
+
+  return `${nome}${marca ? ' — ' + marca : ''}
+
+${beneficios}
+✔ Categoria: ${categoria || '[categoria]'}
+✔ Envio rápido e produto de qualidade garantida
+
+📦 Ideal para quem busca praticidade e custo-benefício no dia a dia.
+
+[Adicione aqui detalhes de tamanho, material, cor disponíveis e instruções de uso, se houver]`;
+}
+
+function dicasPorPlataforma(plataforma) {
+  const dicas = {
+    shopee: [
+      'Use as primeiras palavras do título para o termo mais buscado — a Shopee dá peso maior ao início.',
+      'Preencha todos os atributos do produto (cor, tamanho, material) — isso melhora a posição na busca interna.',
+      'Adicione pelo menos 5 imagens, a primeira sempre em fundo branco.',
+    ],
+    mercadolivre: [
+      'Título deve ser direto: Produto + atributo principal, sem enfeites ou emojis (o ML pode rejeitar).',
+      'Preencha a ficha técnica completa — é um dos fatores mais fortes de ranqueamento no ML.',
+      'Use categoria correta e específica, evite categorias genéricas.',
+    ],
+    amazon: [
+      'Título pode ser mais longo e descritivo, mas evite maiúsculas exageradas.',
+      'Use os "bullet points" para benefícios, não apenas características.',
+      'Backend keywords (campo oculto) devem conter termos que não couberam no título.',
+    ],
+    generico: [
+      'Priorize a palavra-chave principal no início do título.',
+      'Descrição com bullet points converte mais do que parágrafos longos.',
+      'Sempre inclua uma chamada para ação no fim da descrição.',
+    ],
+  };
+  return dicas[plataforma] || dicas.generico;
+}
+
+document.getElementById('btnGerarSEO').addEventListener('click', () => {
+  const plataforma = document.getElementById('seoPlataforma').value;
+  const nome = document.getElementById('seoNome').value.trim();
+  const categoria = document.getElementById('seoCategoria').value.trim();
+  const marca = document.getElementById('seoMarca').value.trim();
+  const diferencial = document.getElementById('seoDiferencial').value.trim();
+
+  if (!nome) { alert('Preencha o nome do produto.'); return; }
+
+  const { titulo, limite } = gerarTitulo(plataforma, nome, categoria, marca, diferencial);
+  document.getElementById('seoTitulo').value = titulo;
+  const contagemEl = document.getElementById('seoTituloContagem');
+  contagemEl.textContent = `${titulo.length} / ${limite} caracteres`;
+  contagemEl.className = 'char-count ' + (titulo.length <= limite ? 'ok' : 'warn');
+
+  const chaves = gerarPalavrasChave(nome, categoria, diferencial);
+  document.getElementById('seoChips').innerHTML = chaves.map(c => `<span class="chip">${c}</span>`).join('');
+
+  document.getElementById('seoDescricao').value = gerarDescricao(plataforma, nome, categoria, marca, diferencial);
+
+  const dicas = dicasPorPlataforma(plataforma);
+  document.getElementById('seoDicas').innerHTML = `
+    <div class="card-title" style="font-size:15px;"><span class="badge">💡</span> Dicas para ${plataforma}</div>
+    <ul style="margin:0; padding-left:18px; font-size:13px; line-height:1.8;">
+      ${dicas.map(d => `<li>${d}</li>`).join('')}
+    </ul>`;
+
+  document.getElementById('cardSeoResultado').style.display = 'block';
+});
+
+document.querySelectorAll('.btn-copy').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const alvo = document.getElementById(btn.dataset.copy);
+    navigator.clipboard.writeText(alvo.value).then(() => {
+      const textoOriginal = btn.textContent;
+      btn.textContent = '✓ Copiado!';
+      setTimeout(() => btn.textContent = textoOriginal, 1500);
+    });
+  });
 });
 </script>
 </body>
