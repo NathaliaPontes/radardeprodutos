@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Radar de Produtos</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjNkM1Q0U3Ii8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iIzAwRDlDMCIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxyZWN0IHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgcng9IjYiIGZpbGw9InVybCgjZykiLz4KPHRleHQgeD0iMTIiIHk9IjE3IiBmb250LXNpemU9IjE1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7wn5OmPC90ZXh0Pgo8L3N2Zz4=">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
@@ -42,60 +43,68 @@
   }
 
   /* ---------- Layout ---------- */
-  .app{
-    display:grid;
-    grid-template-columns: 260px 1fr;
-    min-height:100vh;
-  }
+  .shell{ max-width: 1080px; margin: 0 auto; padding: 0 20px 80px; }
 
-  .sidebar{
-    background: var(--bg-elev);
-    border-right:1px solid var(--border);
-    padding: 26px 18px;
-    display:flex; flex-direction:column; gap:28px;
-    position:sticky; top:0; height:100vh;
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 22px 4px 18px;
   }
-  .brand{ display:flex; align-items:center; gap:10px; padding:0 6px; }
+  .brand{ display:flex; align-items:center; gap:10px; }
   .brand-mark{
     width:36px; height:36px; border-radius:10px;
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
     display:flex; align-items:center; justify-content:center;
-    font-size:18px; flex-shrink:0;
+    flex-shrink:0;
   }
+  .brand-mark svg{ width:19px; height:19px; }
   .brand-text{ font-family:'Manrope'; font-weight:800; font-size:16px; line-height:1.2; }
   .brand-text span{ display:block; font-family:'Inter'; font-weight:500; font-size:11.5px; color:var(--text-dim); }
 
-  .sidebar-nav{ display:flex; flex-direction:column; gap:4px; }
-  .nav-item{
-    display:flex; align-items:center; gap:10px;
-    padding:11px 14px; border-radius:10px;
-    color: var(--text-dim); font-weight:600; font-size:14px;
-    cursor:pointer; border:1px solid transparent; background:none;
-    text-align:left; font-family:'Inter'; width:100%;
-    transition: background .15s, color .15s;
-  }
-  .nav-item:hover{ background: var(--surface); color: var(--text); }
-  .nav-item.active{ background: var(--accent-soft); color: var(--text); border-color:#6C5CE733; }
-  .nav-item .ico{ font-size:16px; width:20px; text-align:center; }
-
-  .sidebar-foot{ margin-top:auto; }
   .status-chip{
     display:flex; align-items:center; gap:8px;
     background: var(--surface); border:1px solid var(--border);
-    border-radius:10px; padding:10px 12px;
-    font-size:11.5px; color:var(--text-dim); font-family:'JetBrains Mono';
+    border-radius:10px; padding:9px 12px;
+    font-size:11px; color:var(--text-dim); font-family:'JetBrains Mono';
+    white-space:nowrap;
   }
   .dot{ width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 0 3px var(--success-soft); flex-shrink:0; }
 
-  .main{ padding: 32px 40px 80px; max-width:1080px; }
-  @media (max-width:640px){ .main{ padding:20px 16px 60px; } }
+  /* Barra de abas — sempre cabe, sem scroll */
+  .tabbar{
+    display:flex; gap:6px;
+    background: var(--bg-elev);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:5px;
+    margin-bottom: 28px;
+  }
+  .nav-item{
+    flex:1;
+    display:flex; align-items:center; justify-content:center; gap:7px;
+    padding:10px 8px; border-radius:9px;
+    color: var(--text-dim); font-weight:600; font-size:13.5px;
+    cursor:pointer; border:none; background:none;
+    font-family:'Inter';
+    transition: background .15s, color .15s;
+  }
+  .nav-item svg{ width:16px; height:16px; flex-shrink:0; }
+  .nav-item:hover{ color: var(--text); }
+  .nav-item.active{ background: var(--surface); color: var(--text); box-shadow: 0 1px 0 var(--border); }
 
-  .page-header{ margin-bottom:28px; }
+  @media (max-width:520px){
+    .nav-item span.label{ display:none; }
+    .nav-item{ gap:0; }
+    .nav-item svg{ width:19px; height:19px; }
+  }
+
+  .content{ /* conteúdo principal, sem grid — mais simples e à prova de bugs de layout */ }
+
+  .page-header{ margin-bottom:24px; }
   .page-header h1{
-    font-family:'Manrope'; font-weight:800; font-size:28px; margin:0 0 6px;
+    font-family:'Manrope'; font-weight:800; font-size:26px; margin:0 0 6px;
     letter-spacing:-0.3px;
   }
-  .page-header p{ color:var(--text-dim); margin:0; font-size:14.5px; }
+  .page-header p{ color:var(--text-dim); margin:0; font-size:14px; }
 
   .tabpane{ display:none; }
   .tabpane.active{ display:block; }
@@ -124,12 +133,13 @@
     font-weight:700; font-size:13px;
     flex-shrink:0;
   }
+  .badge svg{ width:15px; height:15px; }
 
   /* ---------- Dropzone ---------- */
   .dropzone{
     border: 1.5px dashed var(--border);
     border-radius: 12px;
-    padding: 40px 20px;
+    padding: 18px 20px;
     text-align:center;
     cursor:pointer;
     background: var(--bg-elev);
@@ -139,9 +149,9 @@
     border-color: var(--accent);
     background: var(--accent-soft);
   }
-  .dropzone svg{ margin-bottom:10px; opacity:.8; }
-  .dropzone .main-txt{ font-weight:600; font-size:14.5px; }
-  .dropzone .sub{ font-family:'JetBrains Mono'; font-size:11.5px; color:var(--text-faint); margin-top:6px;}
+  .dropzone svg{ margin-bottom:6px; opacity:.8; width:22px; height:22px; }
+  .dropzone .main-txt{ font-weight:600; font-size:13.5px; }
+  .dropzone .sub{ font-family:'JetBrains Mono'; font-size:11px; color:var(--text-faint); margin-top:4px;}
   input[type=file]{ display:none; }
   .file-ok{
     display:flex; align-items:center; justify-content:space-between;
@@ -297,44 +307,35 @@
   .status-pill.validado{ background: var(--success-soft); color: var(--success); }
   .status-pill.nao-validou{ background: var(--danger-soft); color: var(--danger); }
   .status-pill.testando{ background: #F5A6231F; color: var(--warn); }
-
-  /* ---------- Responsivo (fica por último de propósito, pra sempre vencer as regras acima) ---------- */
-  @media (max-width: 860px){
-    .app{ grid-template-columns: 1fr; }
-    .sidebar{
-      position:relative; width:100%; height:auto;
-      border-right:none; border-bottom:1px solid var(--border);
-      flex-direction:row; align-items:center; flex-wrap:wrap;
-      gap:14px; padding:16px 18px;
-    }
-    .sidebar-nav{ flex-direction:row; overflow-x:auto; gap:6px; flex:1; }
-    .nav-item{ white-space:nowrap; }
-    .sidebar-foot{ margin-top:0; }
-    .main{ padding:20px 16px 60px; }
-  }
 </style>
 </head>
 <body>
-<div class="app">
+<div class="shell">
 
-  <aside class="sidebar">
+  <header class="topbar">
     <div class="brand">
-      <div class="brand-mark">📦</div>
+      <div class="brand-mark" style="font-size:20px;">📦</div>
       <div class="brand-text">Radar de Produtos<span>Catálogo &amp; ADS</span></div>
     </div>
+    <div class="status-chip"><span class="dot"></span> Tendência ao vivo · 15 min</div>
+  </header>
 
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-tab="tabRanking"><span class="ico">📊</span> Ranking</button>
-      <button class="nav-item" data-tab="tabResultados"><span class="ico">✅</span> Resultados</button>
-      <button class="nav-item" data-tab="tabSEO"><span class="ico">🔍</span> SEO</button>
-    </nav>
+  <nav class="tabbar">
+    <button class="nav-item active" data-tab="tabRanking">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+      <span class="label">Ranking</span>
+    </button>
+    <button class="nav-item" data-tab="tabResultados">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>
+      <span class="label">Resultados</span>
+    </button>
+    <button class="nav-item" data-tab="tabSEO">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span class="label">SEO</span>
+    </button>
+  </nav>
 
-    <div class="sidebar-foot">
-      <div class="status-chip"><span class="dot"></span> Tendência ao vivo · 15 min</div>
-    </div>
-  </aside>
-
-  <main class="main">
+  <main class="content">
 
   <div class="page-header">
     <h1>Radar de Produtos</h1>
@@ -392,7 +393,7 @@
         </div>
       </div>
       <p class="hint" id="qtdCategoria"></p>
-      <button class="btn-main" id="btnGerar">🔍 Gerar ranking</button>
+      <button class="btn-main" id="btnGerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Gerar ranking</button>
       <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
     </div>
 
@@ -401,7 +402,7 @@
   <!-- ABA 2: RESULTADOS -->
   <div id="tabResultados" class="tabpane">
     <div class="card">
-      <div class="card-title"><span class="badge">✓</span> Registrar teste de anúncio</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span> Registrar teste de anúncio</div>
       <div class="row2">
         <div>
           <div class="field">
@@ -432,11 +433,11 @@
           </div>
         </div>
       </div>
-      <button class="btn-main" id="btnAddResultado">➕ Adicionar registro</button>
+      <button class="btn-main" id="btnAddResultado"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><path d="M12 5v14M5 12h14"/></svg>Adicionar registro</button>
     </div>
 
     <div class="card">
-      <div class="card-title"><span class="badge">📈</span> Resumo</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/></svg></span> Resumo</div>
       <div class="metrics" id="resumoMetrics">
         <div class="metric"><div class="num" id="rmTotal">0</div><div class="lab">TESTADOS</div></div>
         <div class="metric"><div class="num" id="rmValidados">0</div><div class="lab">VALIDADOS</div></div>
@@ -449,7 +450,7 @@
     </div>
 
     <div class="card">
-      <div class="card-title"><span class="badge">📋</span> Histórico</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h6"/></svg></span> Histórico</div>
       <div style="max-height:320px; overflow-y:auto;">
         <table>
           <thead><tr><th>Produto</th><th>Categoria</th><th>Gasto</th><th>Receita</th><th>ROAS</th><th>Status</th><th></th></tr></thead>
@@ -457,8 +458,8 @@
         </table>
       </div>
       <div style="display:flex; gap:10px; margin-top:16px;">
-        <button class="btn-secondary" id="btnBaixarHistorico" style="flex:1;">⬇️ Baixar backup (JSON)</button>
-        <button class="btn-secondary" id="btnCarregarHistorico" style="flex:1;">⬆️ Carregar backup</button>
+        <button class="btn-secondary" id="btnBaixarHistorico" style="flex:1;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px;"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>Baixar backup (JSON)</button>
+        <button class="btn-secondary" id="btnCarregarHistorico" style="flex:1;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-right:5px;"><path d="M12 21V9m0 0l-4 4m4-4l4 4M4 5h16"/></svg>Carregar backup</button>
         <input type="file" id="inputCarregarHistorico" accept=".json" style="display:none;">
       </div>
       <p class="hint">O histórico fica só nesta sessão do navegador. Baixe o backup pra não perder e carregue de novo na próxima vez que abrir o site.</p>
@@ -468,7 +469,7 @@
   <!-- ABA 3: SEO -->
   <div id="tabSEO" class="tabpane">
     <div class="card">
-      <div class="card-title"><span class="badge">🔍</span> Gerar SEO otimizado</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span> Gerar SEO otimizado</div>
       <div class="row2">
         <div>
           <div class="field">
@@ -500,11 +501,11 @@
           </div>
         </div>
       </div>
-      <button class="btn-main" id="btnGerarSEO">✨ Gerar título, palavras-chave e descrição</button>
+      <button class="btn-main" id="btnGerarSEO"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/></svg>Gerar título, palavras-chave e descrição</button>
     </div>
 
     <div class="card" id="cardSeoResultado" style="display:none;">
-      <div class="card-title"><span class="badge">📝</span> Resultado</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg></span> Resultado</div>
 
       <label class="field-label">Título otimizado</label>
       <div class="copy-row">
@@ -899,7 +900,7 @@ function renderizarHistorico() {
           <td>R$ ${r.receita.toFixed(2)}</td>
           <td>${roas.toFixed(2)}x</td>
           <td><span class="status-pill ${status}">${statusTexto}</span></td>
-          <td><button class="btn-danger-sm" data-del="${i}" title="Remover">✕</button></td>
+          <td><button class="btn-danger-sm" data-del="${i}" title="Remover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;"><path d="M18 6L6 18M6 6l12 12"/></svg></button></td>
         </tr>`;
     }).join('');
   }
@@ -1033,16 +1034,16 @@ function gerarTitulo(plataforma, nome, categoria, marca, diferencial) {
 
 function gerarDescricao(plataforma, nome, categoria, marca, diferencial) {
   const beneficios = diferencial
-    ? diferencial.split(',').map(d => `✔ ${d.trim().charAt(0).toUpperCase() + d.trim().slice(1)}`).join('\n')
-    : '✔ [adicione aqui os principais benefícios do produto]';
+    ? diferencial.split(',').map(d => `• ${d.trim().charAt(0).toUpperCase() + d.trim().slice(1)}`).join('\n')
+    : '• [adicione aqui os principais benefícios do produto]';
 
   return `${nome}${marca ? ' — ' + marca : ''}
 
 ${beneficios}
-✔ Categoria: ${categoria || '[categoria]'}
-✔ Envio rápido e produto de qualidade garantida
+• Categoria: ${categoria || '[categoria]'}
+• Envio rápido e produto de qualidade garantida
 
-📦 Ideal para quem busca praticidade e custo-benefício no dia a dia.
+Ideal para quem busca praticidade e custo-benefício no dia a dia.
 
 [Adicione aqui detalhes de tamanho, material, cor disponíveis e instruções de uso, se houver]`;
 }
@@ -1095,7 +1096,7 @@ document.getElementById('btnGerarSEO').addEventListener('click', () => {
 
   const dicas = dicasPorPlataforma(plataforma);
   document.getElementById('seoDicas').innerHTML = `
-    <div class="card-title" style="font-size:15px;"><span class="badge">💡</span> Dicas para ${plataforma}</div>
+    <div class="card-title" style="font-size:15px;"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg></span> Dicas para ${plataforma}</div>
     <ul style="margin:0; padding-left:18px; font-size:13px; line-height:1.8;">
       ${dicas.map(d => `<li>${d}</li>`).join('')}
     </ul>`;
