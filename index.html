@@ -1271,6 +1271,20 @@ function calcularRelevanciaSEO(titulo, termoBuscado) {
   return pontos;
 }
 
+async function buscarJsonComFallback(url) {
+  // Tenta direto primeiro; se falhar (geralmente por CORS), tenta via proxy público
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('status ' + resp.status);
+    return await resp.json();
+  } catch (e1) {
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+    const resp2 = await fetch(proxyUrl);
+    if (!resp2.ok) throw new Error('status proxy ' + resp2.status);
+    return await resp2.json();
+  }
+}
+
 async function buscarRankingMercadoLivre(termo) {
   const cardML = document.getElementById('cardOfertasML');
   const statusEl = document.getElementById('mlStatus');
@@ -1282,9 +1296,7 @@ async function buscarRankingMercadoLivre(termo) {
 
   try {
     const url = `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(termo)}&limit=25`;
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('Falha na consulta');
-    const dados = await resp.json();
+    const dados = await buscarJsonComFallback(url);
     const itens = dados.results || [];
 
     if (itens.length === 0) {
@@ -1337,7 +1349,7 @@ async function buscarRankingMercadoLivre(termo) {
     `).join('');
 
   } catch (e) {
-    statusEl.textContent = 'Não foi possível consultar o Mercado Livre agora (a API pode estar temporariamente indisponível). Tente novamente em instantes.';
+    statusEl.textContent = 'Não foi possível consultar o Mercado Livre agora (o serviço de acesso pode estar temporariamente sobrecarregado). Tente novamente em alguns instantes — os links de outros sites abaixo continuam funcionando normalmente.';
   }
 }
 </script>
