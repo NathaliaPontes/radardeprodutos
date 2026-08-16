@@ -328,6 +328,35 @@
   .link-item .link-name{ font-weight:600; font-size:13.5px; }
   .link-item .link-desc{ font-size:11.5px; color:var(--text-faint); margin-top:1px; }
   .link-item .link-arrow{ color: var(--text-faint); flex-shrink:0; }
+
+  /* ---------- Ranking de anúncios (Mercado Livre) ---------- */
+  .rank-item{
+    display:flex; align-items:center; gap:14px;
+    background: var(--bg-elev); border:1px solid var(--border); border-radius:12px;
+    padding:12px 14px; margin-bottom:10px; text-decoration:none; color:var(--text);
+    transition: border-color .15s;
+  }
+  .rank-item:hover{ border-color: var(--accent); }
+  .rank-pos{
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono'; font-weight:700; font-size:12px;
+    background: var(--surface-2); color: var(--text-dim);
+  }
+  .rank-item:nth-child(1) .rank-pos{ background: linear-gradient(135deg,#F5C518,#F5A623); color:#1a1508; }
+  .rank-item:nth-child(2) .rank-pos{ background: #C7CDD9; color:#1a1508; }
+  .rank-item:nth-child(3) .rank-pos{ background: #C9915B; color:#1a1508; }
+  .rank-thumb{ width:46px; height:46px; border-radius:8px; object-fit:cover; background:#fff; flex-shrink:0; }
+  .rank-info{ flex:1; min-width:0; }
+  .rank-title{ font-weight:600; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .rank-meta{ display:flex; gap:12px; margin-top:4px; flex-wrap:wrap; }
+  .rank-meta span{ font-family:'JetBrains Mono'; font-size:11px; color:var(--text-faint); }
+  .rank-meta b{ color: var(--accent-2); font-weight:700; }
+  .rank-score{
+    font-family:'JetBrains Mono'; font-weight:700; font-size:13px; color: var(--accent-2);
+    text-align:right; flex-shrink:0; min-width:44px;
+  }
+  .rank-score .lab{ font-size:9px; color:var(--text-faint); font-weight:500; display:block; }
 </style>
 </head>
 <body>
@@ -343,7 +372,7 @@
 
   <nav class="tabbar">
     <button class="nav-item active" data-tab="tabRanking">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
       <span class="label">Ranking</span>
     </button>
     <button class="nav-item" data-tab="tabResultados">
@@ -355,7 +384,7 @@
       <span class="label">SEO</span>
     </button>
     <button class="nav-item" data-tab="tabOfertas">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.3 5.7 20.7 8 13.6l-6-4.4h7.6z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg>
       <span class="label">Ofertas</span>
     </button>
   </nav>
@@ -555,26 +584,32 @@
   <!-- ABA 4: OFERTAS & ANÚNCIOS -->
   <div id="tabOfertas" class="tabpane">
     <div class="card">
-      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.3 5.7 20.7 8 13.6l-6-4.4h7.6z"/></svg></span> Buscar produto</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span> Buscar produto</div>
       <div class="field">
         <label class="field-label">Nome do produto</label>
         <input type="text" id="ofertasNome" placeholder="Ex: Jogo de Panelas Antiaderente 5 Peças">
       </div>
       <button class="btn-main" id="btnGerarOfertas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        Gerar links de pesquisa
+        Buscar dados reais e links
       </button>
-      <p class="hint">Abre a pesquisa pronta em cada site, numa aba nova — sem sair daqui.</p>
+      <p class="hint">Traz preços reais do Mercado Livre + links de pesquisa pra outros sites, numa aba nova.</p>
+    </div>
+
+    <div class="card" id="cardOfertasML" style="display:none;">
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span> Ranking de preços — Mercado Livre (ao vivo)</div>
+      <div id="mlStatus" class="hint" style="margin-bottom:12px;"></div>
+      <div id="mlResultados"></div>
     </div>
 
     <div class="card" id="cardOfertasPrecos" style="display:none;">
-      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span> Preços de concorrentes</div>
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span> Pesquisar em outros sites de preço</div>
       <div id="listaPrecos" class="link-list"></div>
     </div>
 
     <div class="card" id="cardOfertasAnuncios" style="display:none;">
       <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20M8 15h3"/></svg></span> Anúncios de referência</div>
-      <p class="hint" style="margin-top:-8px; margin-bottom:14px;">Veja anúncios reais que estão rodando agora pra esse produto — bom pra pegar ideias de imagem, texto e oferta.</p>
+      <p class="hint" style="margin-top:-8px; margin-bottom:14px;">Sem API pública gratuita pra puxar isso automaticamente — os links abaixo levam direto pra pesquisa em cada plataforma.</p>
       <div id="listaAnuncios" class="link-list"></div>
     </div>
   </div>
@@ -1191,7 +1226,7 @@ function renderizarLinks(containerId, lista, termo) {
   container.innerHTML = lista.map(site => `
     <a class="link-item" href="${site.url(q)}" target="_blank" rel="noopener noreferrer">
       <div class="link-ico">
-        <img src="https://www.google.com/s2/favicons?sz=64&domain=${site.dominio}" alt=""
+        <img src="https://icons.duckduckgo.com/ip3/${site.dominio}.ico" alt=""
              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
         <span style="display:none;">${site.sigla}</span>
       </div>
@@ -1210,10 +1245,101 @@ document.getElementById('btnGerarOfertas').addEventListener('click', () => {
 
   renderizarLinks('listaPrecos', SITES_PRECO, termo);
   renderizarLinks('listaAnuncios', SITES_ANUNCIO, termo);
-
   document.getElementById('cardOfertasPrecos').style.display = 'block';
   document.getElementById('cardOfertasAnuncios').style.display = 'block';
+
+  buscarRankingMercadoLivre(termo);
 });
+
+function normalizarLista(valores) {
+  if (!valores.length) return [];
+  const min = Math.min(...valores), max = Math.max(...valores);
+  if (max === min) return valores.map(() => 50);
+  return valores.map(v => ((v - min) / (max - min)) * 100);
+}
+
+function calcularRelevanciaSEO(titulo, termoBuscado) {
+  const palavrasTermo = termoBuscado.toLowerCase().split(/\s+/).filter(p => p.length > 2);
+  const tituloLower = titulo.toLowerCase();
+  let pontos = 0;
+  palavrasTermo.forEach((palavra, idx) => {
+    if (tituloLower.includes(palavra)) {
+      // palavras que aparecem mais cedo no termo original valem um pouco mais
+      pontos += (palavrasTermo.length - idx);
+    }
+  });
+  return pontos;
+}
+
+async function buscarRankingMercadoLivre(termo) {
+  const cardML = document.getElementById('cardOfertasML');
+  const statusEl = document.getElementById('mlStatus');
+  const resultadosEl = document.getElementById('mlResultados');
+
+  cardML.style.display = 'block';
+  statusEl.textContent = 'Buscando anúncios reais no Mercado Livre...';
+  resultadosEl.innerHTML = '';
+
+  try {
+    const url = `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(termo)}&limit=25`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Falha na consulta');
+    const dados = await resp.json();
+    const itens = dados.results || [];
+
+    if (itens.length === 0) {
+      statusEl.textContent = 'Nenhum anúncio encontrado para esse termo.';
+      return;
+    }
+
+    const temVendas = itens.some(it => typeof it.sold_quantity === 'number' && it.sold_quantity > 0);
+
+    const precos = itens.map(it => it.price);
+    const vendas = itens.map(it => it.sold_quantity || 0);
+    const relevancias = itens.map(it => calcularRelevanciaSEO(it.title, termo));
+
+    // preço menor = melhor competitividade -> inverte a normalização
+    const precoNorm = normalizarLista(precos).map(v => 100 - v);
+    const vendasNorm = normalizarLista(vendas);
+    const seoNorm = normalizarLista(relevancias);
+
+    const PESO_VENDAS = temVendas ? 0.5 : 0;
+    const PESO_PRECO = temVendas ? 0.3 : 0.6;
+    const PESO_SEO = temVendas ? 0.2 : 0.4;
+
+    const itensComScore = itens.map((it, i) => ({
+      ...it,
+      _vendas: vendas[i],
+      _score: (vendasNorm[i] * PESO_VENDAS) + (precoNorm[i] * PESO_PRECO) + (seoNorm[i] * PESO_SEO),
+    }));
+
+    itensComScore.sort((a, b) => b._score - a._score);
+    const top15 = itensComScore.slice(0, 15);
+
+    statusEl.innerHTML = temVendas
+      ? `${itens.length} anúncios encontrados · ranking considera vendas, preço competitivo e relevância de SEO no título`
+      : `${itens.length} anúncios encontrados · esse termo não retornou dado de vendas do Mercado Livre, então o ranking considera preço competitivo e relevância de SEO no título`;
+
+    resultadosEl.innerHTML = top15.map((it, i) => `
+      <a class="rank-item" href="${it.permalink}" target="_blank" rel="noopener noreferrer">
+        <div class="rank-pos">${i + 1}</div>
+        <img class="rank-thumb" src="${it.thumbnail}" alt="" onerror="this.style.opacity=0;">
+        <div class="rank-info">
+          <div class="rank-title">${it.title}</div>
+          <div class="rank-meta">
+            <span>R$ ${it.price.toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+            ${temVendas ? `<span><b>${it._vendas}</b> vendidos</span>` : ''}
+            <span>${it.seller && it.seller.nickname ? it.seller.nickname : 'vendedor'}</span>
+          </div>
+        </div>
+        <div class="rank-score">${it._score.toFixed(0)}<span class="lab">SCORE</span></div>
+      </a>
+    `).join('');
+
+  } catch (e) {
+    statusEl.textContent = 'Não foi possível consultar o Mercado Livre agora (a API pode estar temporariamente indisponível). Tente novamente em instantes.';
+  }
+}
 </script>
 </body>
 </html>
