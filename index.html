@@ -307,6 +307,27 @@
   .status-pill.validado{ background: var(--success-soft); color: var(--success); }
   .status-pill.nao-validou{ background: var(--danger-soft); color: var(--danger); }
   .status-pill.testando{ background: #F5A6231F; color: var(--warn); }
+
+  /* ---------- Links de ofertas/anúncios ---------- */
+  .link-list{ display:flex; flex-direction:column; gap:8px; }
+  .link-item{
+    display:flex; align-items:center; gap:12px;
+    background: var(--bg-elev); border:1px solid var(--border); border-radius:10px;
+    padding:12px 14px; text-decoration:none; color:var(--text);
+    transition: border-color .15s, transform .1s;
+  }
+  .link-item:hover{ border-color: var(--accent); transform: translateX(2px); }
+  .link-item .link-ico{
+    width:34px; height:34px; border-radius:8px; flex-shrink:0;
+    background: #fff; display:flex; align-items:center; justify-content:center;
+    font-family:'Manrope'; font-weight:800; font-size:12px; color: var(--accent);
+    overflow:hidden;
+  }
+  .link-item .link-ico img{ width:20px; height:20px; object-fit:contain; }
+  .link-item .link-info{ flex:1; }
+  .link-item .link-name{ font-weight:600; font-size:13.5px; }
+  .link-item .link-desc{ font-size:11.5px; color:var(--text-faint); margin-top:1px; }
+  .link-item .link-arrow{ color: var(--text-faint); flex-shrink:0; }
 </style>
 </head>
 <body>
@@ -332,6 +353,10 @@
     <button class="nav-item" data-tab="tabSEO">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <span class="label">SEO</span>
+    </button>
+    <button class="nav-item" data-tab="tabOfertas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.3 5.7 20.7 8 13.6l-6-4.4h7.6z"/></svg>
+      <span class="label">Ofertas</span>
     </button>
   </nav>
 
@@ -524,6 +549,33 @@
       </div>
 
       <div id="seoDicas" class="card" style="margin-top:20px; background:var(--bg-elev);"></div>
+    </div>
+  </div>
+
+  <!-- ABA 4: OFERTAS & ANÚNCIOS -->
+  <div id="tabOfertas" class="tabpane">
+    <div class="card">
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.1L12 16.3 5.7 20.7 8 13.6l-6-4.4h7.6z"/></svg></span> Buscar produto</div>
+      <div class="field">
+        <label class="field-label">Nome do produto</label>
+        <input type="text" id="ofertasNome" placeholder="Ex: Jogo de Panelas Antiaderente 5 Peças">
+      </div>
+      <button class="btn-main" id="btnGerarOfertas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Gerar links de pesquisa
+      </button>
+      <p class="hint">Abre a pesquisa pronta em cada site, numa aba nova — sem sair daqui.</p>
+    </div>
+
+    <div class="card" id="cardOfertasPrecos" style="display:none;">
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></span> Preços de concorrentes</div>
+      <div id="listaPrecos" class="link-list"></div>
+    </div>
+
+    <div class="card" id="cardOfertasAnuncios" style="display:none;">
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20M8 15h3"/></svg></span> Anúncios de referência</div>
+      <p class="hint" style="margin-top:-8px; margin-bottom:14px;">Veja anúncios reais que estão rodando agora pra esse produto — bom pra pegar ideias de imagem, texto e oferta.</p>
+      <div id="listaAnuncios" class="link-list"></div>
     </div>
   </div>
 
@@ -1113,6 +1165,54 @@ document.querySelectorAll('.btn-copy').forEach(btn => {
       setTimeout(() => btn.textContent = textoOriginal, 1500);
     });
   });
+});
+
+// =================================================================
+// ABA OFERTAS & ANÚNCIOS — links de pesquisa prontos em sites externos
+// =================================================================
+const SITES_PRECO = [
+  { sigla: 'GS', dominio: 'google.com', nome: 'Google Shopping', desc: 'Comparação geral de preços', url: q => `https://www.google.com/search?tbm=shop&q=${q}` },
+  { sigla: 'ML', dominio: 'mercadolivre.com.br', nome: 'Mercado Livre', desc: 'Preços praticados no maior marketplace do Brasil', url: q => `https://lista.mercadolivre.com.br/${q.replace(/%20/g,'-')}` },
+  { sigla: 'SP', dominio: 'shopee.com.br', nome: 'Shopee', desc: 'Preços e concorrência direta na Shopee', url: q => `https://shopee.com.br/search?keyword=${q}` },
+  { sigla: 'ZM', dominio: 'zoom.com.br', nome: 'Zoom', desc: 'Comparador de preços brasileiro', url: q => `https://www.zoom.com.br/procura?q=${q}` },
+  { sigla: 'BP', dominio: 'buscape.com.br', nome: 'Buscapé', desc: 'Comparador de preços brasileiro', url: q => `https://www.buscape.com.br/search?q=${q}` },
+  { sigla: 'PB', dominio: 'promobit.com.br', nome: 'Promobit', desc: 'Promoções e ofertas em alta agora', url: q => `https://www.promobit.com.br/busca/?q=${q}` },
+];
+
+const SITES_ANUNCIO = [
+  { sigla: 'FB', dominio: 'facebook.com', nome: 'Meta Ads Library', desc: 'Anúncios ativos no Facebook e Instagram', url: q => `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=BR&q=${q}&media_type=all` },
+  { sigla: 'TT', dominio: 'tiktok.com', nome: 'TikTok Creative Center', desc: 'Anúncios e criativos em alta no TikTok', url: q => `https://ads.tiktok.com/business/creativecenter/inspiration/topads/pc/en?region=BR&keyword=${q}` },
+  { sigla: 'GA', dominio: 'google.com', nome: 'Google Ads Transparency', desc: 'Anúncios ativos na rede do Google', url: q => `https://adstransparency.google.com/?region=BR&query=${q}` },
+];
+
+function renderizarLinks(containerId, lista, termo) {
+  const q = encodeURIComponent(termo);
+  const container = document.getElementById(containerId);
+  container.innerHTML = lista.map(site => `
+    <a class="link-item" href="${site.url(q)}" target="_blank" rel="noopener noreferrer">
+      <div class="link-ico">
+        <img src="https://www.google.com/s2/favicons?sz=64&domain=${site.dominio}" alt=""
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <span style="display:none;">${site.sigla}</span>
+      </div>
+      <div class="link-info">
+        <div class="link-name">${site.nome}</div>
+        <div class="link-desc">${site.desc}</div>
+      </div>
+      <svg class="link-arrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M7 7h10v10"/></svg>
+    </a>
+  `).join('');
+}
+
+document.getElementById('btnGerarOfertas').addEventListener('click', () => {
+  const termo = document.getElementById('ofertasNome').value.trim();
+  if (!termo) { alert('Digite o nome do produto.'); return; }
+
+  renderizarLinks('listaPrecos', SITES_PRECO, termo);
+  renderizarLinks('listaAnuncios', SITES_ANUNCIO, termo);
+
+  document.getElementById('cardOfertasPrecos').style.display = 'block';
+  document.getElementById('cardOfertasAnuncios').style.display = 'block';
 });
 </script>
 </body>
