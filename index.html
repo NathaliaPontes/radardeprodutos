@@ -587,13 +587,14 @@
       <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span> Buscar produto</div>
       <div class="field">
         <label class="field-label">Nome do produto</label>
-        <input type="text" id="ofertasNome" placeholder="Ex: Jogo de Panelas Antiaderente 5 Peças">
+        <input type="text" id="ofertasNome" placeholder="Ex: Fone de Ouvido Bluetooth Premium Cancelamento de Ruído">
       </div>
       <button class="btn-main" id="btnGerarOfertas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        Buscar dados reais e links
+        <span id="btnGerarOfertasTexto">Buscar dados reais e links</span>
       </button>
       <p class="hint">Traz preços reais do Mercado Livre + links de pesquisa pra outros sites, numa aba nova.</p>
+      <p id="ofertasTermoAtual" class="hint" style="display:none; margin-top:14px; color:var(--accent-2); font-size:13px;"></p>
     </div>
 
     <div class="card" id="cardOfertasML" style="display:none;">
@@ -1209,6 +1210,7 @@ const SITES_PRECO = [
   { sigla: 'GS', dominio: 'google.com', nome: 'Google Shopping', desc: 'Comparação geral de preços', url: q => `https://www.google.com/search?tbm=shop&q=${q}` },
   { sigla: 'ML', dominio: 'mercadolivre.com.br', nome: 'Mercado Livre', desc: 'Preços praticados no maior marketplace do Brasil', url: q => `https://lista.mercadolivre.com.br/${q.replace(/%20/g,'-')}` },
   { sigla: 'SP', dominio: 'shopee.com.br', nome: 'Shopee', desc: 'Preços e concorrência direta na Shopee', url: q => `https://shopee.com.br/search?keyword=${q}` },
+  { sigla: 'AE', dominio: 'aliexpress.com', nome: 'AliExpress', desc: 'Preço de fábrica/fornecedor original — bom pra comparar sua margem', url: q => `https://www.aliexpress.com/wholesale?SearchText=${q}` },
   { sigla: 'ZM', dominio: 'zoom.com.br', nome: 'Zoom', desc: 'Comparador de preços brasileiro', url: q => `https://www.zoom.com.br/procura?q=${q}` },
   { sigla: 'BP', dominio: 'buscape.com.br', nome: 'Buscapé', desc: 'Comparador de preços brasileiro', url: q => `https://www.buscape.com.br/search?q=${q}` },
   { sigla: 'PB', dominio: 'promobit.com.br', nome: 'Promobit', desc: 'Promoções e ofertas em alta agora', url: q => `https://www.promobit.com.br/busca/?q=${q}` },
@@ -1243,12 +1245,24 @@ document.getElementById('btnGerarOfertas').addEventListener('click', () => {
   const termo = document.getElementById('ofertasNome').value.trim();
   if (!termo) { alert('Digite o nome do produto.'); return; }
 
+  const btn = document.getElementById('btnGerarOfertas');
+  const btnTexto = document.getElementById('btnGerarOfertasTexto');
+  const termoEl = document.getElementById('ofertasTermoAtual');
+
+  btn.disabled = true;
+  btnTexto.textContent = 'Buscando...';
+  termoEl.style.display = 'block';
+  termoEl.textContent = `Pesquisando por: "${termo}"`;
+
   renderizarLinks('listaPrecos', SITES_PRECO, termo);
   renderizarLinks('listaAnuncios', SITES_ANUNCIO, termo);
   document.getElementById('cardOfertasPrecos').style.display = 'block';
   document.getElementById('cardOfertasAnuncios').style.display = 'block';
 
-  buscarRankingMercadoLivre(termo);
+  buscarRankingMercadoLivre(termo).finally(() => {
+    btn.disabled = false;
+    btnTexto.textContent = 'Buscar dados reais e links';
+  });
 });
 
 function normalizarLista(valores) {
