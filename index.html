@@ -357,6 +357,23 @@
     text-align:right; flex-shrink:0; min-width:44px;
   }
   .rank-score .lab{ font-size:9px; color:var(--text-faint); font-weight:500; display:block; }
+
+  /* ---------- Layout lado a lado ---------- */
+  .grid-row{ display:grid; grid-template-columns: 1fr 1fr; gap:20px; align-items:start; }
+  .grid-row .card{ margin-bottom:0; }
+  @media (max-width:860px){ .grid-row{ grid-template-columns: 1fr; } }
+
+  /* ---------- Termômetro ---------- */
+  .term-item{ margin-bottom:12px; }
+  .term-item:last-child{ margin-bottom:0; }
+  .term-row{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+  .term-nome{ font-size:12.5px; font-weight:600; }
+  .term-valor{ font-family:'JetBrains Mono'; font-size:11px; color:var(--text-faint); }
+  .term-track{ background: var(--surface-2); border-radius:20px; height:8px; overflow:hidden; }
+  .term-fill{ height:100%; border-radius:20px; }
+  .term-fill.procurado{ background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .term-fill.vendido{ background: linear-gradient(90deg, #F5A623, #F0556B); }
+  .term-label{ font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-faint); letter-spacing:0.5px; margin-bottom:8px; text-transform:uppercase; }
 </style>
 </head>
 <body>
@@ -399,56 +416,79 @@
   <!-- ABA 1: RANKING -->
   <div id="tabRanking" class="tabpane active">
 
-    <!-- ETAPA 1 -->
-    <div class="card">
-      <div class="card-title"><span class="badge">1</span> Catálogo</div>
-      <div id="dropzone" class="dropzone">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-        <div class="main-txt">Clique ou arraste o CSV do seu catálogo</div>
-        <div class="sub">colunas esperadas: Nome do Produto, Categoria, Preço</div>
-        <input type="file" id="fileInput" accept=".csv">
+    <div class="grid-row">
+      <!-- ETAPA 1 -->
+      <div class="card">
+        <div class="card-title"><span class="badge">1</span> Catálogo</div>
+        <div id="dropzone" class="dropzone">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+          <div class="main-txt">Clique ou arraste o CSV do seu catálogo</div>
+          <div class="sub">colunas esperadas: Nome do Produto, Categoria, Preço</div>
+          <input type="file" id="fileInput" accept=".csv">
+        </div>
+        <div id="fileOk" class="file-ok" style="display:none;">
+          <span id="fileOkText"></span>
+          <button id="trocarArquivo">Trocar arquivo</button>
+        </div>
       </div>
-      <div id="fileOk" class="file-ok" style="display:none;">
-        <span id="fileOkText"></span>
-        <button id="trocarArquivo">Trocar arquivo</button>
+
+      <!-- TERMÔMETRO -->
+      <div class="card disabled" id="cardTermometro">
+        <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></span> Termômetro</div>
+        <p class="hint" style="margin-top:-10px; margin-bottom:12px;">Automático — sem digitar nada, usa os dados de tendência já calculados pelo robô.</p>
+        <div id="termometroProcurados"></div>
+        <div id="termometroVendidos" style="margin-top:16px;"></div>
       </div>
     </div>
 
-    <!-- ETAPA 2 -->
-    <div class="card disabled" id="cardConfig">
-      <div class="card-title"><span class="badge">2</span> Configurações</div>
-      <div class="row2">
-        <div>
-          <div class="field">
-            <label class="field-label">Categoria</label>
-            <select id="categoriaSelect"></select>
-          </div>
-          <div class="field">
-            <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
-            <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
-          </div>
+    <div class="grid-row">
+      <!-- ETAPA 2: BUSCA POR TAGS/PALAVRA-CHAVE (estilo Adminer) -->
+      <div class="card disabled" id="cardBuscaTags">
+        <div class="card-title"><span class="badge">2</span> Buscar por tag / palavra-chave</div>
+        <p class="hint" style="margin-top:-10px; margin-bottom:14px;">Opção paralela à categoria — digite um termo (ex: "led", "pet", "infantil") e veja quais produtos do catálogo batem com ele, estilo mineração de produtos.</p>
+        <div class="field" style="margin-bottom:14px;">
+          <input type="text" id="tagBuscaInput" placeholder="Ex: led, pet, infantil, natal...">
         </div>
-        <div>
-          <div class="toggle-row">
-            <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
-            <label class="switch">
-              <input type="checkbox" id="tendenciaToggle" checked>
-              <span class="slider-switch"></span>
-            </label>
-          </div>
-          <div class="field">
-            <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
-            <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
-          </div>
-          <div class="field">
-            <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
-            <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
-          </div>
-        </div>
+        <div id="tagResultadoInfo" class="hint" style="margin-bottom:10px;"></div>
+        <div id="tagResultadoLista" class="link-list"></div>
       </div>
-      <p class="hint" id="qtdCategoria"></p>
-      <button class="btn-main" id="btnGerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Gerar ranking</button>
-      <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
+
+      <!-- ETAPA 3 -->
+      <div class="card disabled" id="cardConfig">
+        <div class="card-title"><span class="badge">3</span> Configurações</div>
+        <div class="row2">
+          <div>
+            <div class="field">
+              <label class="field-label">Categoria</label>
+              <select id="categoriaSelect"></select>
+            </div>
+            <div class="field">
+              <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
+              <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
+            </div>
+          </div>
+          <div>
+            <div class="toggle-row">
+              <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
+              <label class="switch">
+                <input type="checkbox" id="tendenciaToggle" checked>
+                <span class="slider-switch"></span>
+              </label>
+            </div>
+            <div class="field">
+              <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
+              <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
+            </div>
+            <div class="field">
+              <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
+              <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
+            </div>
+          </div>
+        </div>
+        <p class="hint" id="qtdCategoria"></p>
+        <button class="btn-main" id="btnGerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Gerar ranking</button>
+        <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
+      </div>
     </div>
 
   </div>
@@ -707,6 +747,7 @@ document.getElementById('trocarArquivo').addEventListener('click', () => {
   fileOk.style.display = 'none';
   dropzone.style.display = 'block';
   cardConfig.classList.add('disabled');
+  document.getElementById('cardBuscaTags').classList.add('disabled');
 });
 
 function parseCSV(text) {
@@ -743,6 +784,8 @@ function handleFile(file) {
     dropzone.style.display = 'none';
     popularCategorias();
     cardConfig.classList.remove('disabled');
+    document.getElementById('cardBuscaTags').classList.remove('disabled');
+    inicializarTermometro();
   };
   reader.readAsText(file, 'UTF-8');
 }
@@ -1364,6 +1407,145 @@ async function buscarRankingMercadoLivre(termo) {
 
   } catch (e) {
     statusEl.textContent = 'Não foi possível consultar o Mercado Livre agora (o serviço de acesso pode estar temporariamente sobrecarregado). Tente novamente em alguns instantes — os links de outros sites abaixo continuam funcionando normalmente.';
+  }
+}
+
+// =================================================================
+// BUSCA POR TAG/PALAVRA-CHAVE NO CATÁLOGO (estilo mineração de produtos)
+// =================================================================
+let tagBuscaTimeout = null;
+
+document.getElementById('tagBuscaInput').addEventListener('input', () => {
+  clearTimeout(tagBuscaTimeout);
+  tagBuscaTimeout = setTimeout(executarBuscaTag, 250); // pequeno delay pra não filtrar a cada tecla
+});
+
+function executarBuscaTag() {
+  const termo = document.getElementById('tagBuscaInput').value.trim().toLowerCase();
+  const infoEl = document.getElementById('tagResultadoInfo');
+  const listaEl = document.getElementById('tagResultadoLista');
+
+  if (!termo) {
+    infoEl.textContent = '';
+    listaEl.innerHTML = '';
+    return;
+  }
+
+  const encontrados = produtos.filter(p =>
+    (p['Nome do Produto'] || '').toLowerCase().includes(termo) ||
+    (p['Categoria'] || '').toLowerCase().includes(termo) ||
+    (p['Marca'] || '').toLowerCase().includes(termo)
+  );
+
+  infoEl.textContent = `${encontrados.length} produto(s) encontrado(s) para "${termo}"`;
+
+  const mostrar = encontrados.slice(0, 30);
+  if (mostrar.length === 0) {
+    listaEl.innerHTML = `<div class="empty-msg">Nenhum produto bate com esse termo.</div>`;
+    return;
+  }
+
+  listaEl.innerHTML = mostrar.map(p => `
+    <div class="link-item" style="cursor:default;">
+      <div class="link-ico" style="background:var(--surface-2); color:var(--text);">
+        <span>${(p['Nome do Produto']||'?').charAt(0).toUpperCase()}</span>
+      </div>
+      <div class="link-info">
+        <div class="link-name">${p['Nome do Produto']}</div>
+        <div class="link-desc">${p['Categoria'] || ''} ${p['Preço'] ? '· R$ ' + p['Preço'] : ''}</div>
+      </div>
+      <button class="btn-copy" data-produto="${p['Nome do Produto'].replace(/"/g,'&quot;')}" onclick="checarProdutoNasRedes(this)">
+        Ver nas redes
+      </button>
+    </div>
+  `).join('');
+
+  if (encontrados.length > 30) {
+    listaEl.innerHTML += `<div class="hint" style="text-align:center; margin-top:8px;">Mostrando os primeiros 30 de ${encontrados.length} resultados — refine o termo pra ver menos.</div>`;
+  }
+}
+
+function checarProdutoNasRedes(btn) {
+  const nomeProduto = btn.dataset.produto;
+  // troca pra aba Ofertas
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tabpane').forEach(p => p.classList.remove('active'));
+  document.querySelector('.nav-item[data-tab="tabOfertas"]').classList.add('active');
+  document.getElementById('tabOfertas').classList.add('active');
+  // preenche e dispara a busca
+  document.getElementById('ofertasNome').value = nomeProduto;
+  document.getElementById('btnGerarOfertas').click();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// =================================================================
+// TERMÔMETRO — mais procurados (tendência já calculada) + mais vendidos (Mercado Livre)
+// tudo automático, sem o usuário digitar nada
+// =================================================================
+async function inicializarTermometro() {
+  const cardTerm = document.getElementById('cardTermometro');
+  const elProcurados = document.getElementById('termometroProcurados');
+  const elVendidos = document.getElementById('termometroVendidos');
+
+  cardTerm.classList.remove('disabled');
+  elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados agora</div><div class="hint">Carregando dados de tendência...</div>`;
+  elVendidos.innerHTML = '';
+
+  const scores = await carregarTrendsJSON();
+  const entradas = Object.entries(scores || {}).filter(([termo, score]) => score > 0);
+
+  if (entradas.length === 0) {
+    elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados agora</div><div class="hint">Ainda não há dados de tendência calculados pelo robô pra esse catálogo.</div>`;
+    return;
+  }
+
+  entradas.sort((a, b) => b[1] - a[1]);
+  const top5 = entradas.slice(0, 5);
+  const maiorScore = top5[0][1];
+
+  elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados agora (Google Trends)</div>` +
+    top5.map(([termo, score]) => `
+      <div class="term-item">
+        <div class="term-row"><span class="term-nome">${termo}</span><span class="term-valor">${Math.round(score)}</span></div>
+        <div class="term-track"><div class="term-fill procurado" style="width:${Math.max(6, (score / maiorScore) * 100)}%"></div></div>
+      </div>
+    `).join('');
+
+  // Agora busca "mais vendidos" no Mercado Livre pros mesmos termos mais quentes — automático
+  elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Consultando vendas reais...</div>`;
+
+  try {
+    const resultados = await Promise.all(top5.map(async ([termo]) => {
+      try {
+        const url = `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(termo)}&limit=5`;
+        const dados = await buscarJsonComFallback(url);
+        const itens = dados.results || [];
+        const totalVendido = itens.reduce((soma, it) => soma + (it.sold_quantity || 0), 0);
+        return { termo, vendidos: totalVendido };
+      } catch (e) {
+        return { termo, vendidos: 0 };
+      }
+    }));
+
+    const temDados = resultados.some(r => r.vendidos > 0);
+
+    if (!temDados) {
+      elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Esse conjunto de termos não retornou dado de vendas do Mercado Livre agora.</div>`;
+      return;
+    }
+
+    resultados.sort((a, b) => b.vendidos - a.vendidos);
+    const maiorVendas = resultados[0].vendidos || 1;
+
+    elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre, entre os termos acima)</div>` +
+      resultados.map(r => `
+        <div class="term-item">
+          <div class="term-row"><span class="term-nome">${r.termo}</span><span class="term-valor">${r.vendidos} vendidos</span></div>
+          <div class="term-track"><div class="term-fill vendido" style="width:${Math.max(6, (r.vendidos / maiorVendas) * 100)}%"></div></div>
+        </div>
+      `).join('');
+  } catch (e) {
+    elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Não foi possível consultar vendas agora. Tente recarregar o catálogo em instantes.</div>`;
   }
 }
 </script>
