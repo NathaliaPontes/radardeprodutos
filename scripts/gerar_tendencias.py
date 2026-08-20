@@ -7,20 +7,27 @@ Lê o catálogo em data/produtos-catalogo.csv, monta os termos de busca
 por produto (mesma lógica usada no site, em index.html), consulta o
 Google Trends, e salva o resultado em trends.json — que o site (GitHub
 Pages) lê diretamente, sem precisar de servidor.
+
+Para não estourar o limite de consultas do Google Trends, o script
+limita a análise aos N produtos de maior margem por categoria
+(configurável abaixo).
 """
 
 import json
 import time
+import re
 import pandas as pd
 from pytrends.request import TrendReq
 
 ARQUIVO_CATALOGO = "data/produtos-catalogo.csv"
 ARQUIVO_SAIDA = "trends.json"
-MARKUP_PADRAO = 2.5
-TOP_POR_CATEGORIA = 40
+MARKUP_PADRAO = 2.5          # mesmo valor padrão usado no site, só para ordenar por margem
+TOP_POR_CATEGORIA = 40        # quantos produtos de cada categoria são analisados no Trends
 
 
 def nome_para_busca(nome):
+    """Mesma lógica usada em index.html (função nomeParaBusca) — precisa ficar igual
+    para o site conseguir casar os termos com as chaves do trends.json."""
     ignorar = {"com", "de", "para", "cm", "kg", "un", "unid", "-"}
     palavras = [p for p in str(nome).split() if p.lower() not in ignorar]
     return " ".join(palavras[:4])
@@ -78,25 +85,45 @@ def buscar_tendencias(termos):
     return scores
 
 
+def buscar_tendencias_web(pytrends):
+    """
+    Busca as pesquisas em alta no Brasil AGORA, de forma totalmente genérica —
+    sem nenhuma relação com o catálogo do usuário. É a tendência real da web.
+    """
+    try:
+        df = pytrends.trending_searches(pn="brazil")
+        termos = df[0].tolist()[:20]  # top 20 pesquisas em alta
+        return termos
+    except Exception as e:
+        print(f"Aviso: falha ao buscar tendências gerais da web ({e})")
+        return []
+
+
 def main():
     print(f"Lendo {ARQUIVO_CATALOGO}...")
     df = pd.read_csv(ARQUIVO_CATALOGO)
     df.columns = [c.strip() for c in df.columns]
 
     termos = selecionar_termos(df)
-    print(f"{len(termos)} termos únicos a consultar no Google Trends.")
+    print(f"{len(termos)} termos únicos a consultar no Google Trends (baseados no catálogo).")
 
     scores = buscar_tendencias(termos)
+
+    print("Buscando tendências gerais da web (independente do catálogo)...")
+    pytrends_web = TrendReq(hl="pt-BR", tz=180)
+    termos_web = buscar_tendencias_web(pytrends_web)
+    print(f"{len(termos_web)} termos em alta na web encontrados.")
 
     saida = {
         "gerado_em": pd.Timestamp.utcnow().isoformat(),
         "scores": scores,
+        "tendencias_web": termos_web,
     }
 
     with open(ARQUIVO_SAIDA, "w", encoding="utf-8") as f:
         json.dump(saida, f, ensure_ascii=False, indent=2)
 
-    print(f"Salvo em {ARQUIVO_SAIDA} com {len(scores)} termos.")
+    print(f"Salvo em {ARQUIVO_SAIDA} com {len(scores)} termos do catálogo + {len(termos_web)} termos da web.")
 
 
 if __name__ == "__main__":
