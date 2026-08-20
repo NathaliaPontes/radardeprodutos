@@ -433,9 +433,9 @@
       </div>
 
       <!-- TERMÔMETRO -->
-      <div class="card disabled" id="cardTermometro">
+      <div class="card" id="cardTermometro">
         <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></span> Termômetro</div>
-        <p class="hint" style="margin-top:-10px; margin-bottom:12px;">Automático — sem digitar nada, usa os dados de tendência já calculados pelo robô.</p>
+        <p class="hint" style="margin-top:-10px; margin-bottom:12px;">Automático — carrega sozinho ao abrir a página, usando os dados de tendência já calculados pelo robô a partir do catálogo salvo no site. Se você subir um catálogo novo aqui do seu navegador, ele se atualiza também.</p>
         <div id="termometroProcurados"></div>
         <div id="termometroVendidos" style="margin-top:16px;"></div>
       </div>
@@ -1117,6 +1117,7 @@ document.getElementById('inputCarregarHistorico').addEventListener('change', (e)
 });
 
 renderizarHistorico();
+inicializarTermometro();
 
 // =================================================================
 // ABA SEO — gerador de título, palavras-chave e descrição
