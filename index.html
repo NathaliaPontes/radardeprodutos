@@ -416,10 +416,30 @@
   <!-- ABA 1: RANKING -->
   <div id="tabRanking" class="tabpane active">
 
+    <!-- TERMÔMETRO — independente, não depende de catálogo -->
+    <div class="card" id="cardTermometro">
+      <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></span> Termômetro</div>
+      <p class="hint" style="margin-top:-10px; margin-bottom:12px;">100% automático — carrega sozinho ao abrir a página, direto do trends.json calculado pelo robô. Não depende de nenhum catálogo carregado aqui no navegador.</p>
+      <div id="termometroProcurados"></div>
+      <div id="termometroVendidos" style="margin-top:16px;"></div>
+    </div>
+
     <div class="grid-row">
-      <!-- ETAPA 1 -->
-      <div class="card">
-        <div class="card-title"><span class="badge">1</span> Catálogo</div>
+      <!-- ETAPA 1: BUSCA POR TAGS/PALAVRA-CHAVE (estilo Adminer) -->
+      <div class="card disabled" id="cardBuscaTags">
+        <div class="card-title"><span class="badge">1</span> Buscar por tag / palavra-chave</div>
+        <p class="hint" style="margin-top:-10px; margin-bottom:14px;">Opção paralela à categoria — digite um termo (ex: "led", "pet", "infantil") e veja quais produtos do catálogo batem com ele, estilo mineração de produtos.</p>
+        <div class="field" style="margin-bottom:14px;">
+          <input type="text" id="tagBuscaInput" placeholder="Ex: led, pet, infantil, natal...">
+        </div>
+        <div id="tagResultadoInfo" class="hint" style="margin-bottom:10px;"></div>
+        <div id="tagResultadoLista" class="link-list"></div>
+      </div>
+
+      <!-- ETAPA 2: CATÁLOGO + CONFIGURAÇÕES, no mesmo card -->
+      <div class="card" id="cardConfig">
+        <div class="card-title"><span class="badge">2</span> Catálogo & Configurações</div>
+
         <div id="dropzone" class="dropzone">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#6C5CE7" stroke-width="1.8"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
           <div class="main-txt">Clique ou arraste o CSV do seu catálogo</div>
@@ -430,64 +450,41 @@
           <span id="fileOkText"></span>
           <button id="trocarArquivo">Trocar arquivo</button>
         </div>
-      </div>
 
-      <!-- TERMÔMETRO -->
-      <div class="card" id="cardTermometro">
-        <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></span> Termômetro</div>
-        <p class="hint" style="margin-top:-10px; margin-bottom:12px;">Automático — carrega sozinho ao abrir a página, usando os dados de tendência já calculados pelo robô a partir do catálogo salvo no site. Se você subir um catálogo novo aqui do seu navegador, ele se atualiza também.</p>
-        <div id="termometroProcurados"></div>
-        <div id="termometroVendidos" style="margin-top:16px;"></div>
-      </div>
-    </div>
-
-    <div class="grid-row">
-      <!-- ETAPA 2: BUSCA POR TAGS/PALAVRA-CHAVE (estilo Adminer) -->
-      <div class="card disabled" id="cardBuscaTags">
-        <div class="card-title"><span class="badge">2</span> Buscar por tag / palavra-chave</div>
-        <p class="hint" style="margin-top:-10px; margin-bottom:14px;">Opção paralela à categoria — digite um termo (ex: "led", "pet", "infantil") e veja quais produtos do catálogo batem com ele, estilo mineração de produtos.</p>
-        <div class="field" style="margin-bottom:14px;">
-          <input type="text" id="tagBuscaInput" placeholder="Ex: led, pet, infantil, natal...">
-        </div>
-        <div id="tagResultadoInfo" class="hint" style="margin-bottom:10px;"></div>
-        <div id="tagResultadoLista" class="link-list"></div>
-      </div>
-
-      <!-- ETAPA 3 -->
-      <div class="card disabled" id="cardConfig">
-        <div class="card-title"><span class="badge">3</span> Configurações</div>
-        <div class="row2">
-          <div>
-            <div class="field">
-              <label class="field-label">Categoria</label>
-              <select id="categoriaSelect"></select>
+        <div id="configCampos" class="disabled" style="margin-top:18px;">
+          <div class="row2">
+            <div>
+              <div class="field">
+                <label class="field-label">Categoria</label>
+                <select id="categoriaSelect"></select>
+              </div>
+              <div class="field">
+                <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
+                <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
+              </div>
             </div>
-            <div class="field">
-              <label class="field-label">Markup sobre o custo — <span class="slider-val" id="markupVal">2.5x</span></label>
-              <input type="range" id="markupRange" min="1.2" max="5" step="0.1" value="2.5">
+            <div>
+              <div class="toggle-row">
+                <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
+                <label class="switch">
+                  <input type="checkbox" id="tendenciaToggle" checked>
+                  <span class="slider-switch"></span>
+                </label>
+              </div>
+              <div class="field">
+                <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
+                <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
+              </div>
+              <div class="field">
+                <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
+                <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
+              </div>
             </div>
           </div>
-          <div>
-            <div class="toggle-row">
-              <label class="field-label" style="margin:0;">Incluir tendência (Google Trends)</label>
-              <label class="switch">
-                <input type="checkbox" id="tendenciaToggle" checked>
-                <span class="slider-switch"></span>
-              </label>
-            </div>
-            <div class="field">
-              <label class="field-label">Peso: tendência vs. margem — <span class="slider-val" id="pesoVal">50% / 50%</span></label>
-              <input type="range" id="pesoRange" min="0" max="100" step="10" value="50">
-            </div>
-            <div class="field">
-              <label class="field-label">Quantos produtos mostrar no ranking — <span class="slider-val" id="topNVal">20</span></label>
-              <input type="range" id="topNRange" min="5" max="60" step="5" value="20">
-            </div>
-          </div>
+          <p class="hint" id="qtdCategoria"></p>
+          <button class="btn-main" id="btnGerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Gerar ranking</button>
+          <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
         </div>
-        <p class="hint" id="qtdCategoria"></p>
-        <button class="btn-main" id="btnGerar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Gerar ranking</button>
-        <p class="hint">A tendência é atualizada automaticamente a cada 15-30 min pelo GitHub Actions — aparece na hora, sem espera no clique.</p>
       </div>
     </div>
 
@@ -733,7 +730,7 @@ const dropzone = document.getElementById('dropzone');
 const fileInput = document.getElementById('fileInput');
 const fileOk = document.getElementById('fileOk');
 const fileOkText = document.getElementById('fileOkText');
-const cardConfig = document.getElementById('cardConfig');
+const configCampos = document.getElementById('configCampos');
 
 dropzone.addEventListener('click', () => fileInput.click());
 dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
@@ -746,7 +743,7 @@ fileInput.addEventListener('change', e => { if (e.target.files.length) handleFil
 document.getElementById('trocarArquivo').addEventListener('click', () => {
   fileOk.style.display = 'none';
   dropzone.style.display = 'block';
-  cardConfig.classList.add('disabled');
+  configCampos.classList.add('disabled');
   document.getElementById('cardBuscaTags').classList.add('disabled');
 });
 
@@ -783,9 +780,8 @@ function handleFile(file) {
     fileOk.style.display = 'flex';
     dropzone.style.display = 'none';
     popularCategorias();
-    cardConfig.classList.remove('disabled');
+    configCampos.classList.remove('disabled');
     document.getElementById('cardBuscaTags').classList.remove('disabled');
-    inicializarTermometro();
   };
   reader.readAsText(file, 'UTF-8');
 }
