@@ -419,7 +419,7 @@
     <!-- TERMÔMETRO — independente, não depende de catálogo -->
     <div class="card" id="cardTermometro">
       <div class="card-title"><span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></span> Termômetro</div>
-      <p class="hint" style="margin-top:-10px; margin-bottom:12px;">100% automático — carrega sozinho ao abrir a página, direto do trends.json calculado pelo robô. Não depende de nenhum catálogo carregado aqui no navegador.</p>
+      <p class="hint" style="margin-top:-10px; margin-bottom:12px;">100% automático e genérico — mostra o que está em alta na web agora (Google Trends Brasil), sem nenhuma relação com o seu catálogo.</p>
       <div id="termometroProcurados"></div>
       <div id="termometroVendidos" style="margin-top:16px;"></div>
     </div>
@@ -712,6 +712,7 @@ let colunas = [];
 let resultadoAtual = [];
 let trendsCache = null;
 let trendsGeradoEm = null;
+let tendenciasWebCache = null;
 
 async function carregarTrendsJSON() {
   if (trendsCache !== null) return trendsCache;
@@ -720,8 +721,10 @@ async function carregarTrendsJSON() {
     const dados = await resp.json();
     trendsCache = dados.scores || {};
     trendsGeradoEm = dados.gerado_em || null;
+    tendenciasWebCache = dados.tendencias_web || [];
   } catch (e) {
     trendsCache = {};
+    tendenciasWebCache = [];
   }
   return trendsCache;
 }
@@ -1485,34 +1488,34 @@ async function inicializarTermometro() {
   const elVendidos = document.getElementById('termometroVendidos');
 
   cardTerm.classList.remove('disabled');
-  elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados agora</div><div class="hint">Carregando dados de tendência...</div>`;
+  elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados na web agora</div><div class="hint">Carregando dados de tendência...</div>`;
   elVendidos.innerHTML = '';
 
-  const scores = await carregarTrendsJSON();
-  const entradas = Object.entries(scores || {}).filter(([termo, score]) => score > 0);
+  await carregarTrendsJSON();
+  const termosWeb = (tendenciasWebCache || []).filter(Boolean);
 
-  if (entradas.length === 0) {
-    elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados agora</div><div class="hint">Ainda não há dados de tendência calculados pelo robô pra esse catálogo.</div>`;
+  if (termosWeb.length === 0) {
+    elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados na web agora</div><div class="hint">Ainda não há dados de tendência geral calculados pelo robô. Isso aparece na próxima execução automática (a cada 15-30 min).</div>`;
     return;
   }
 
-  entradas.sort((a, b) => b[1] - a[1]);
-  const top5 = entradas.slice(0, 5);
-  const maiorScore = top5[0][1];
+  const top5 = termosWeb.slice(0, 5);
+  // não vem com número, então a "intensidade" da barra reflete a posição no ranking (1º lugar = 100%)
+  const pesos = top5.map((_, i) => 100 - i * 15);
 
-  elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados agora (Google Trends)</div>` +
-    top5.map(([termo, score]) => `
+  elProcurados.innerHTML = `<div class="term-label">🔥 Mais procurados na web agora (Google Trends Brasil, geral)</div>` +
+    top5.map((termo, i) => `
       <div class="term-item">
-        <div class="term-row"><span class="term-nome">${termo}</span><span class="term-valor">${Math.round(score)}</span></div>
-        <div class="term-track"><div class="term-fill procurado" style="width:${Math.max(6, (score / maiorScore) * 100)}%"></div></div>
+        <div class="term-row"><span class="term-nome">${termo}</span><span class="term-valor">#${i + 1}</span></div>
+        <div class="term-track"><div class="term-fill procurado" style="width:${pesos[i]}%"></div></div>
       </div>
     `).join('');
 
-  // Agora busca "mais vendidos" no Mercado Livre pros mesmos termos mais quentes — automático
+  // Agora busca "mais vendidos" no Mercado Livre pros mesmos termos da web — automático
   elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Consultando vendas reais...</div>`;
 
   try {
-    const resultados = await Promise.all(top5.map(async ([termo]) => {
+    const resultados = await Promise.all(top5.map(async (termo) => {
       try {
         const url = `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(termo)}&limit=5`;
         const dados = await buscarJsonComFallback(url);
@@ -1527,14 +1530,14 @@ async function inicializarTermometro() {
     const temDados = resultados.some(r => r.vendidos > 0);
 
     if (!temDados) {
-      elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Esse conjunto de termos não retornou dado de vendas do Mercado Livre agora.</div>`;
+      elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Esses termos em alta na web não bateram com produtos vendáveis no Mercado Livre agora (é comum — nem toda pesquisa em alta é sobre produto).</div>`;
       return;
     }
 
     resultados.sort((a, b) => b.vendidos - a.vendidos);
     const maiorVendas = resultados[0].vendidos || 1;
 
-    elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre, entre os termos acima)</div>` +
+    elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre, cruzando com a tendência da web)</div>` +
       resultados.map(r => `
         <div class="term-item">
           <div class="term-row"><span class="term-nome">${r.termo}</span><span class="term-valor">${r.vendidos} vendidos</span></div>
@@ -1542,7 +1545,7 @@ async function inicializarTermometro() {
         </div>
       `).join('');
   } catch (e) {
-    elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Não foi possível consultar vendas agora. Tente recarregar o catálogo em instantes.</div>`;
+    elVendidos.innerHTML = `<div class="term-label">💰 Mais vendidos (Mercado Livre)</div><div class="hint">Não foi possível consultar vendas agora. Tente recarregar a página em instantes.</div>`;
   }
 }
 </script>
